@@ -8,8 +8,12 @@
     "start:apiServer": "node ./devServer/api-server.js",
     "start:devGateway": "node ./devServer/start-devGateway.js",
     "start:codespace": "env-cmd -f .env.dev vite --host",
+    "local": "npm run build:manifest:local && env-cmd -f .env.dev vite --port 60000",
+    "swa": "env-cmd -f .env.dev swa start http://localhost:60000 --api-devserver-url http://localhost:7071 --host 0.0.0.0 --port 60006",
     "build:test": "env-cmd -f .env.test vite build --outDir ../build/Frontend",
     "build:prod": "env-cmd -f .env.prod vite build --outDir ../build/Frontend --mode production",
+    "build:manifest:local": "cd ../scripts/Build && pwsh ./BuildManifestPackage.ps1 -Environment dev",
+    "build:manifest:prod": "cd ../scripts/Build && pwsh ./BuildManifestPackage.ps1 -Environment prod",
     "preview": "vite preview"
   },
   "author": "",

@@ -8,7 +8,7 @@
 
 const express = require('express');
 const cors = require('cors');
-const { registerDevServerApis } = require('./devServer');
+const { registerDevServerApis } = require('./index');
 
 const app = express();
 const port = 60007; // Different port from Vite dev server

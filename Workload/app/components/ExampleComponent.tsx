@@ -1,5 +1,6 @@
 import React from 'react';
-import { useGetWorkspaces, useFabricWorkspaceUsers } from '../hooks/queries/fabricQueries';
+import { useGetWorkspaces } from '../hooks/queries/fabricQueries';
+import { useFabricWorkspaceUsers } from '../hooks/queries/fabricUserQueries';
 import { Layout } from '@carloconsultants/cs-ui-library';
 import { Spinner, MessageBar, MessageBarType } from '@fluentui/react';
 
