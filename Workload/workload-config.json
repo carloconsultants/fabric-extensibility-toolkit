@@ -8,20 +8,20 @@
     "itemNames": "TemplateItem"
   },
   "azure": {
-    "subscriptionId": "your-subscription-id",
-    "tenantId": "your-tenant-id",
-    "location": "East US"
+    "tenantId": "your-tenant-id"
   },
   "environments": {
     "dev": {
+      "name": "MyApp-swa-preview",
+      "url": "https://myapp-swa-preview.azurestaticapps.net",
+      "branch": "preview",
       "clientId": "your-dev-client-id",
       "clientSecret": "your-dev-client-secret"
     },
-    "test": {
-      "clientId": "your-test-client-id",
-      "clientSecret": "your-test-client-secret"
-    },
     "prod": {
+      "name": "MyApp-swa-prod",
+      "url": "https://myapp-swa-prod.azurestaticapps.net",
+      "branch": "main",
       "clientId": "your-prod-client-id",
       "clientSecret": "your-prod-client-secret"
     }

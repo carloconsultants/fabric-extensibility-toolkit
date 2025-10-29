@@ -450,7 +450,7 @@ Write-Info "  Display Name: $($config.workload.displayName)"
 Write-Info "  Version: $($config.workload.version)"
 Write-Info "  Organization: $($config.workload.organization)"
 Write-Info "  Resource Group: $($config.azure.resourceGroup)"
-Write-Info "  Subscription: $($config.azure.subscriptionId)"
+Write-Info "  Tenant: $($config.azure.tenantId)"
 Write-Info "  GitHub Repo: $($config.github.repository)"
 Write-Info ""
 

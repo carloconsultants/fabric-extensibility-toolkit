@@ -10,23 +10,15 @@ namespace TemplateWorkload.Core
 
         public static class TableNames
         {
-            public static readonly string ProviderProfile = GetEnvVariable("PROVIDER_PROFILE_TABLE");
-            public static readonly string Users = GetEnvVariable("USERS_TABLE");
-            public static readonly string ProviderUsers = GetEnvVariable("PROVIDER_USERS_TABLE");
-            public static readonly string DataShareOffers = GetEnvVariable("DATA_SHARE_OFFERS_TABLE");
-            public static readonly string OfferAttachments = GetEnvVariable("OFFER_ATTACHMENTS_TABLE");
-            public static readonly string OffersHasReportIndex = GetEnvVariable("OFFER_HAS_REPORT_INDEX_TABLE");
-            public static readonly string OffersProviderIndex = GetEnvVariable("OFFER_PROVIDER_INDEX_TABLE");
-            public static readonly string PrivateDataSharesIndex = GetEnvVariable("PRIVATE_DATA_SHARES_INDEX_TABLE");
-            public static readonly string ProviderToOfferLinkIndex = GetEnvVariable("PROVIDER_TO_OFFER_LINK_INDEX_TABLE");
-            public static readonly string AcceptedDataShares = GetEnvVariable("ACCEPTED_DATA_SHARES_TABLE");
-            public static readonly string AppRegistrations = GetEnvVariable("APP_REGISTRATIONS_TABLE");
+            public static readonly string Table1 = GetEnvVariable("TABLE_1");
+            public static readonly string Table2 = GetEnvVariable("TABLE_2");
+            public static readonly string Table3 = GetEnvVariable("TABLE_3");
         }
 
         public static class BlobContainers
         {
-            public static readonly string Logos = GetEnvVariable("PROVIDER_LOGO_CONTAINER");
-            public static readonly string Attachments = GetEnvVariable("OFFER_ATTACHMENT_CONTAINER");
+            public static readonly string Container1 = GetEnvVariable("CONTAINER_1");
+            public static readonly string Container2 = GetEnvVariable("CONTAINER_2");
         }
 
         public static class StorageAccount

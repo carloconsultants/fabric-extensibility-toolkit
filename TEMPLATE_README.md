@@ -23,15 +23,15 @@ This is a comprehensive template for creating Microsoft Fabric workloads. It inc
 
 ### CI/CD & Deployment
 - **Azure Static Web Apps** integration
-- **GitHub Actions** workflow for automated deployments
+- **GitHub Actions** workflow for automated deployments (preview and prod)
 - **Azure DevOps** pipeline configuration
-- **Multi-environment** support (dev, test, prod)
+- **Two environments**: dev (preview) and prod
 - **Automated setup scripts** for CI/CD infrastructure
 - **PR preview** deployments
 - **Local development** with SWA CLI
 
 ### Development Tools
-- Environment configuration files (dev, test, prod)
+- Environment configuration files (dev, prod)
 - Pre-configured `.npmrc` for cs-ui-library access
 - Copilot instructions for AI-assisted development
 - Comprehensive logging and error handling
@@ -51,26 +51,162 @@ cd your-new-workload/
 npm install
 ```
 
-### 2. Configure Environment
-Copy and modify the environment files:
-```bash
-cp .env.dev .env.local
-# Edit .env.local with your specific configuration
+### 2. Set Up Azure Resources
+
+#### A. Create App Registration
+Follow the [App Registration Setup Guide](APP_REGISTRATION_SETUP.md) to create your Azure AD app registration with the required permissions.
+
+#### B. Create Azure Static Web Apps
+You'll need to create two Static Web Apps (one for preview/dev, one for production) to get the required URLs:
+
+1. **Create Preview Static Web App:**
+   - Go to [Azure Portal](https://portal.azure.com) → **Static Web Apps**
+   - Click **"Create"**
+   - Fill in:
+     - **Name**: `{YourWorkloadName}-preview` (e.g., "MyDataApp-preview")
+     - **Resource Group**: Create new or use existing
+     - **Plan**: Free (for development)
+   - Click **"Review + create"** → **"Create"**
+   - After creation, go to **"Manage deployment token"** and copy the token (you'll need this for GitHub Actions)
+
+2. **Create Production Static Web App:**
+   - Repeat the same process with name `{YourWorkloadName}-prod`
+   - Copy the deployment token for this one too
+
+3. **Get the URLs:**
+   - After creation, each Static Web App will have a URL like: `https://{name}.azurestaticapps.net`
+   - Note these URLs - you'll need them for your environment configuration
+
+### 3. Configure Environment (single source of truth)
+Create and fill out the environment files used by both the frontend and API:
+
+Required files in `Workload/` root:
+```text
+.env.dev
+.env.prod
 ```
+
+Minimal variables you must set (match entelexos/pbitips style):
+
+`.env.dev` (preview)
+```ini
+# Workload identity
+WORKLOAD_NAME=Org.FabricTools
+ITEM_NAMES=HelloWorldItem
+WORKLOAD_VERSION=1.0.0
+LOG_LEVEL=info
+
+# Azure AD (preview)
+AZURE_TENANT_ID=<your-tenant-id>
+FRONTEND_APPID=<your-frontend-app-id>
+
+# URLs (from Static Web Apps)
+FRONTEND_URL=https://your-workload-preview.azurestaticapps.net/
+BACKEND_URL=https://your-workload-preview.azurestaticapps.net/api
+
+# Storage (dev can use connection string)
+STORAGE_ACCOUNT_NAME=<your-dev-storage-account>
+STORAGE_CONNECTION_STRING=<your-dev-connection-string>
+
+# Key Vault (optional for local)
+KEY_VAULT_ENDPOINT=
+MANAGED_ID_CLIENT_ID=
+```
+
+`.env.prod`
+```ini
+# Workload identity
+WORKLOAD_NAME=Org.FabricTools
+ITEM_NAMES=HelloWorldItem
+WORKLOAD_VERSION=1.0.0
+LOG_LEVEL=warn
+
+# Azure AD (prod)
+AZURE_TENANT_ID=<your-tenant-id>
+FRONTEND_APPID=<your-frontend-app-id>
+
+# URLs (from Static Web Apps)
+FRONTEND_URL=https://your-workload-prod.azurestaticapps.net/
+BACKEND_URL=https://your-workload-prod.azurestaticapps.net/api
+
+# Storage (prod should use managed identity; no connection string)
+STORAGE_ACCOUNT_NAME=<your-prod-storage-account>
+
+# Key Vault (recommended)
+KEY_VAULT_ENDPOINT=https://<your-kv>.vault.azure.net/
+```
+
+Notes:
+- Local development uses `.env.dev` and overrides URLs with `http://localhost`.
+- Add any extra variables your items need; keep prod free of secrets.
 
 ### 3. Update Configuration
-- Update `package.json` with your workload name
-- Modify environment variables in `.env.*` files
-- Update the workload manifest in `Manifest/` directory
+- Update `package.json` name/version and any display strings
+- Modify variables in `.env.dev` and `.env.prod` as above
+- Update the workload manifest in `Manifest/` directory (product name, item ids)
 - Customize the API namespace in C# files (replace `TemplateWorkload`)
 
-### 4. Set up CI/CD (Optional but Recommended)
-```bash
-# Set up Azure resources and CI/CD pipelines
-./scripts/setup-cicd.ps1 -WorkloadName "MyDataApp" -ResourceGroupName "MyDataApp-01" -SubscriptionId "your-subscription-id"
+### 4. Configure API local settings
+Create or update `Workload/api/local.settings.json` for local Functions:
+```json
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+
+    "AZURE_TENANT_ID": "${AZURE_TENANT_ID}",
+    "KEY_VAULT_ENDPOINT": "${KEY_VAULT_ENDPOINT}",
+    "MANAGED_ID_CLIENT_ID": "${MANAGED_ID_CLIENT_ID}",
+
+    "STORAGE_ACCOUNT_NAME": "${STORAGE_ACCOUNT_NAME}",
+    "STORAGE_CONNECTION_STRING": "${STORAGE_CONNECTION_STRING}",
+
+    "TABLE_1": "table1",
+    "TABLE_2": "table2",
+    "TABLE_3": "table3",
+
+    "CONTAINER_1": "container1",
+    "CONTAINER_2": "container2"
+  }
+}
+```
+Tip: The API reads these via `TemplateWorkload.Core.StorageConfig`.
+
+### 5. Configure GitHub Actions (preview/prod)
+If using GitHub Actions, update or add workflows under `.github/workflows/`:
+
+#### A. Set up GitHub Secrets
+Go to your repository → **Settings** → **Secrets and variables** → **Actions** and add:
+
+- `AZURE_SWA_API_TOKEN_DEV` - Deployment token from your preview Static Web App
+- `AZURE_SWA_API_TOKEN_MAIN` - Deployment token from your production Static Web App
+
+#### B. Update Workflow Files
+What to edit in your workflow files:
+- Environment names: `preview` and `prod`
+- Static Web App names and resource group
+- Branch filters: preview from `preview` (or `develop`), prod from `main`
+- Build env injection: pass `.env.dev` for preview, `.env.prod` for prod
+- Update the `azure_static_web_apps_api_token` values to use the secrets above
+
+Example deploy step snippet:
+```yaml
+    - name: Build frontend
+      run: |
+        cp .env.dev .env
+        npm ci
+        npm run build:prod
+
+    - name: Deploy to Azure Static Web Apps
+      uses: Azure/static-web-apps-deploy@v1
+      with:
+        azure_static_web_apps_api_token: ${{ secrets.SWA_PREVIEW_TOKEN }}
+        app_location: Workload/app
+        output_location: build/Frontend
 ```
 
-### 5. Start Development
+### 6. Start Development
 ```bash
 # Start the development server
 npm run start:devServer
@@ -79,7 +215,7 @@ npm run start:devServer
 npm run start:apiServer
 ```
 
-### 6. Deploy (if CI/CD is set up)
+### 7. Deploy (if CI/CD is set up)
 ```bash
 # Deploy to development
 ./scripts/deploy.ps1 -Environment "dev" -DeploymentToken "your-dev-token"
@@ -106,8 +242,7 @@ Workload/
 │   ├── items/                    # Fabric item editors
 │   └── App.tsx                   # Main app component
 ├── Manifest/                     # Fabric workload manifest
-├── .env.dev                      # Development environment
-├── .env.test                     # Test environment
+├── .env.dev                      # Development (preview) environment
 ├── .env.prod                     # Production environment
 └── .npmrc                        # NPM registry configuration
 ```
@@ -139,14 +274,16 @@ Workload/
 - `ITEM_NAMES`: Comma-separated list of item types
 - `WORKLOAD_VERSION`: Version of your workload
 - `AZURE_TENANT_ID`: Azure tenant ID
-- `KEY_VAULT_ENDPOINT`: Azure Key Vault endpoint
+- `FRONTEND_APPID`: Frontend application ID (from App Registration)
+- `FRONTEND_URL`: Frontend application URL (from Static Web App)
+- `BACKEND_URL`: Backend API URL (from Static Web App)
 - `STORAGE_ACCOUNT_NAME`: Azure Storage account name
 - `STORAGE_CONNECTION_STRING`: Azure Storage connection string
 
 ### Optional Variables
-- `FRONTEND_APPID`: Frontend application ID
-- `BACKEND_APPID`: Backend application ID
-- `BACKEND_URL`: Backend API URL
+- `KEY_VAULT_ENDPOINT`: Azure Key Vault endpoint
+- `MANAGED_ID_CLIENT_ID`: Managed identity client ID
+- `BACKEND_APPID`: Backend application ID (if using separate backend auth)
 - Various table and container names for storage
 
 ## Development Guidelines
