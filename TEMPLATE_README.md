@@ -21,11 +21,21 @@ This is a comprehensive template for creating Microsoft Fabric workloads. It inc
 - Comprehensive error handling with `ServiceResponse` pattern
 - Dependency injection setup
 
+### CI/CD & Deployment
+- **Azure Static Web Apps** integration
+- **GitHub Actions** workflow for automated deployments
+- **Azure DevOps** pipeline configuration
+- **Multi-environment** support (dev, test, prod)
+- **Automated setup scripts** for CI/CD infrastructure
+- **PR preview** deployments
+- **Local development** with SWA CLI
+
 ### Development Tools
 - Environment configuration files (dev, test, prod)
 - Pre-configured `.npmrc` for cs-ui-library access
 - Copilot instructions for AI-assisted development
 - Comprehensive logging and error handling
+- Automated deployment scripts
 
 ## Quick Start
 
@@ -54,13 +64,28 @@ cp .env.dev .env.local
 - Update the workload manifest in `Manifest/` directory
 - Customize the API namespace in C# files (replace `TemplateWorkload`)
 
-### 4. Start Development
+### 4. Set up CI/CD (Optional but Recommended)
+```bash
+# Set up Azure resources and CI/CD pipelines
+./scripts/setup-cicd.ps1 -WorkloadName "MyDataApp" -ResourceGroupName "MyDataApp-01" -SubscriptionId "your-subscription-id"
+```
+
+### 5. Start Development
 ```bash
 # Start the development server
 npm run start:devServer
 
 # In another terminal, start the API server
 npm run start:apiServer
+```
+
+### 6. Deploy (if CI/CD is set up)
+```bash
+# Deploy to development
+./scripts/deploy.ps1 -Environment "dev" -DeploymentToken "your-dev-token"
+
+# Deploy to production
+./scripts/deploy.ps1 -Environment "prod" -DeploymentToken "your-prod-token"
 ```
 
 ## Project Structure

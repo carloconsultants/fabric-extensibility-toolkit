@@ -1,0 +1,251 @@
+# Azure DevOps Pipeline for Fabric Workload Template
+# This pipeline builds and deploys a React frontend with .NET isolated Azure Functions API
+# to Azure Static Web Apps with configurable environments
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+  paths:
+    exclude:
+      - README.md
+      - TEMPLATE_README.md
+      - docs/*
+      - .env.*
+
+pr:
+  branches:
+    include:
+      - main
+      - develop
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  # Static Web App configuration - Update these for your workload
+  appLocation: 'app'
+  apiLocation: 'api'
+  outputLocation: 'dist'
+  nodeVersion: '20.x'
+  dotnetVersion: '8.x'
+  
+  # Workload configuration - Update these for your specific workload
+  workloadName: 'TemplateWorkload'
+  workloadVersion: '1.0.0'
+  resourceGroupName: 'TemplateWorkload-01'
+  
+  # Environment-specific configurations
+  devAppName: '$(workloadName)-swa-dev'
+  testAppName: '$(workloadName)-swa-test'
+  prodAppName: '$(workloadName)-swa-prod'
+
+stages:
+  - stage: Build
+    displayName: 'Build Application'
+    jobs:
+      - job: BuildJob
+        displayName: 'Build and Test'
+        steps:
+          # Checkout code
+          - checkout: self
+            submodules: recursive
+            displayName: 'Checkout repository'
+
+          # Setup Node.js
+          - task: NodeTool@0
+            inputs:
+              versionSpec: $(nodeVersion)
+            displayName: 'Setup Node.js $(nodeVersion)'
+
+          # Setup .NET
+          - task: UseDotNet@2
+            inputs:
+              packageType: 'sdk'
+              version: $(dotnetVersion)
+            displayName: 'Setup .NET $(dotnetVersion)'
+
+          # Cache npm dependencies
+          - task: Cache@2
+            inputs:
+              key: 'npm | "$(Agent.OS)" | $(appLocation)/package-lock.json'
+              restoreKeys: |
+                npm | "$(Agent.OS)"
+              path: $(appLocation)/node_modules
+            displayName: 'Cache npm dependencies'
+
+          # Install npm dependencies
+          - script: |
+              cd $(appLocation)
+              npm ci
+            displayName: 'Install npm dependencies'
+
+          # Build frontend application for production
+          - script: |
+              cd $(appLocation)
+              npm run build:prod
+            displayName: 'Build frontend application'
+
+          # Restore .NET dependencies
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: 'restore'
+              projects: '$(apiLocation)/*.csproj'
+            displayName: 'Restore .NET dependencies'
+
+          # Build .NET API
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: 'build'
+              projects: '$(apiLocation)/*.csproj'
+              arguments: '--configuration Release --no-restore'
+            displayName: 'Build .NET API'
+
+          # Publish .NET API
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: 'publish'
+              projects: '$(apiLocation)/*.csproj'
+              arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)/api --no-build'
+            displayName: 'Publish .NET API'
+
+          # Copy frontend build to staging directory
+          - task: CopyFiles@2
+            inputs:
+              SourceFolder: '$(appLocation)/dist'
+              Contents: '**'
+              TargetFolder: '$(Build.ArtifactStagingDirectory)/app'
+            displayName: 'Copy frontend build artifacts'
+
+          # Publish build artifacts
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'workload-build'
+            displayName: 'Publish build artifacts'
+
+        # Run frontend tests (uncomment when tests are available)
+        # - script: |
+        #     cd $(appLocation)
+        #     npm run test -- --coverage --watchAll=false
+        #   displayName: 'Run frontend tests'
+
+        # Run API tests (uncomment when tests are available)
+        # - task: DotNetCoreCLI@2
+        #   inputs:
+        #     command: 'test'
+        #     projects: '$(apiLocation)/*.csproj'
+        #     arguments: '--configuration Release --no-build --collect:"XPlat Code Coverage"'
+        #   displayName: 'Run API tests'
+
+  # Development environment deployment
+  - stage: DeployDev
+    displayName: 'Deploy to Development'
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+    jobs:
+      - deployment: DeployDevJob
+        displayName: 'Deploy to Development Environment'
+        environment: 'development'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                # Download build artifacts
+                - download: current
+                  artifact: 'workload-build'
+                  displayName: 'Download build artifacts'
+
+                # Deploy to Azure Static Web App using Azure CLI
+                - task: AzureCLI@2
+                  inputs:
+                    azureSubscription: '$(azureServiceConnection)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      # Install Azure Static Web Apps CLI
+                      npm install -g @azure/static-web-apps-cli
+
+                      # Deploy to development environment
+                      cd $(System.DefaultWorkingDirectory)
+                      swa deploy \
+                        --app-location $(Build.ArtifactStagingDirectory)/app \
+                        --api-location $(Build.ArtifactStagingDirectory)/api \
+                        --deployment-token $(AZURE_STATIC_WEB_APPS_DEV_TOKEN) \
+                        --env development
+                  displayName: 'Deploy to Development Azure Static Web App'
+
+  # Production environment deployment
+  - stage: DeployProd
+    displayName: 'Deploy to Production'
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: DeployProdJob
+        displayName: 'Deploy to Production Environment'
+        environment: 'production'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                # Download build artifacts
+                - download: current
+                  artifact: 'workload-build'
+                  displayName: 'Download build artifacts'
+
+                # Deploy to Azure Static Web App using Azure CLI
+                - task: AzureCLI@2
+                  inputs:
+                    azureSubscription: '$(azureServiceConnection)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      # Install Azure Static Web Apps CLI
+                      npm install -g @azure/static-web-apps-cli
+
+                      # Deploy to production environment
+                      cd $(System.DefaultWorkingDirectory)
+                      swa deploy \
+                        --app-location $(Build.ArtifactStagingDirectory)/app \
+                        --api-location $(Build.ArtifactStagingDirectory)/api \
+                        --deployment-token $(AZURE_STATIC_WEB_APPS_PROD_TOKEN) \
+                        --env production
+                  displayName: 'Deploy to Production Azure Static Web App'
+
+  # PR preview deployment
+  - stage: DeployPR
+    displayName: 'Deploy PR Preview'
+    dependsOn: Build
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+    jobs:
+      - deployment: DeployPRJob
+        displayName: 'Deploy PR Preview'
+        environment: 'pr-preview'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                # Download build artifacts
+                - download: current
+                  artifact: 'workload-build'
+                  displayName: 'Download build artifacts'
+
+                # Deploy PR preview using Azure CLI
+                - task: AzureCLI@2
+                  inputs:
+                    azureSubscription: '$(azureServiceConnection)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      # Install Azure Static Web Apps CLI
+                      npm install -g @azure/static-web-apps-cli
+
+                      # Deploy PR preview
+                      cd $(System.DefaultWorkingDirectory)
+                      swa deploy \
+                        --app-location $(Build.ArtifactStagingDirectory)/app \
+                        --api-location $(Build.ArtifactStagingDirectory)/api \
+                        --deployment-token $(AZURE_STATIC_WEB_APPS_DEV_TOKEN) \
+                        --env preview
+                  displayName: 'Deploy PR Preview to Azure Static Web App'

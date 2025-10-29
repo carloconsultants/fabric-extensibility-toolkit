@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json.schemastore.org/schema-org.json",
+  "workload": {
+    "name": "TemplateWorkload",
+    "displayName": "Template Workload",
+    "description": "A Microsoft Fabric workload template",
+    "version": "1.0.0",
+    "organization": "Org",
+    "itemNames": "TemplateItem",
+    "author": "Your Name",
+    "email": "your.email@company.com"
+  },
+  "azure": {
+    "subscriptionId": "your-subscription-id",
+    "tenantId": "your-tenant-id",
+    "resourceGroup": "TemplateWorkload-01",
+    "location": "East US",
+    "storageAccount": {
+      "name": "templateworkloadstorage",
+      "connectionString": "your-storage-connection-string"
+    },
+    "keyVault": {
+      "endpoint": "https://templateworkload-keyvault.vault.azure.net/"
+    }
+  },
+  "environments": {
+    "dev": {
+      "name": "TemplateWorkload-swa-dev",
+      "branch": "develop",
+      "aad": {
+        "frontendAppId": "your-dev-frontend-app-id",
+        "backendAppId": "your-dev-backend-app-id",
+        "clientId": "your-dev-client-id",
+        "clientSecret": "your-dev-client-secret",
+        "audience": "api://your-dev-backend-app-id",
+        "redirectUri": "https://templateworkload-swa-dev.azurestaticapps.net"
+      },
+      "url": "https://templateworkload-swa-dev.azurestaticapps.net"
+    },
+    "test": {
+      "name": "TemplateWorkload-swa-test",
+      "branch": "test",
+      "aad": {
+        "frontendAppId": "your-test-frontend-app-id",
+        "backendAppId": "your-test-backend-app-id",
+        "clientId": "your-test-client-id",
+        "clientSecret": "your-test-client-secret",
+        "audience": "api://your-test-backend-app-id",
+        "redirectUri": "https://templateworkload-swa-test.azurestaticapps.net"
+      },
+      "url": "https://templateworkload-swa-test.azurestaticapps.net"
+    },
+    "prod": {
+      "name": "TemplateWorkload-swa-prod",
+      "branch": "main",
+      "aad": {
+        "frontendAppId": "your-prod-frontend-app-id",
+        "backendAppId": "your-prod-backend-app-id",
+        "clientId": "your-prod-client-id",
+        "clientSecret": "your-prod-client-secret",
+        "audience": "api://your-prod-backend-app-id",
+        "redirectUri": "https://templateworkload-swa-prod.azurestaticapps.net"
+      },
+      "url": "https://templateworkload-swa-prod.azurestaticapps.net"
+    }
+  },
+  "tables": {
+    "providerProfile": "ProviderProfiles",
+    "users": "Users",
+    "providerUsers": "ProviderUsers",
+    "dataShareOffers": "DataShareOffers",
+    "offerAttachments": "OfferAttachments",
+    "offersHasReportIndex": "OfferHasReportIndex",
+    "offersProviderIndex": "OfferProviderIndex",
+    "privateDataSharesIndex": "PrivateDataSharesIndex",
+    "providerToOfferLinkIndex": "ProviderToOfferLinkIndex",
+    "acceptedDataShares": "AcceptedDataShares",
+    "appRegistrations": "AppRegistrations"
+  },
+  "blobContainers": {
+    "logos": "provider-logos",
+    "attachments": "offer-attachments"
+  },
+  "github": {
+    "repository": "your-org/your-repo",
+    "organization": "your-org"
+  },
+  "ci": {
+    "nodeVersion": "20.x",
+    "dotnetVersion": "8.x",
+    "azureServiceConnection": "your-azure-service-connection"
+  }
+}
