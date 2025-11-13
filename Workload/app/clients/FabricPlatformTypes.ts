@@ -20,32 +20,11 @@ export interface AuthenticationConfig {
 // Common types
 export interface Principal {
   id: string;
-  type: PrincipalType;
-  displayName?: string;
-  groupDetails?: GroupDetails;
-  servicePrincipalDetails?: ServicePrincipalDetails;
-  servicePrincipalProfileDetails?: ServicePrincipalProfileDetails;
-  userDetails?: UserDetails;
-}
-
-export type PrincipalType = 'User' | 'ServicePrincipal' | 'Group' | 'ServicePrincipalProfile';
-
-export interface GroupDetails {
-  groupType: GroupType;
-}
-
-export type GroupType = 'Unknown' | 'SecurityGroup' | 'DistributionList';
-
-export interface ServicePrincipalDetails {
-  aadAppId: string;
-}
-
-export interface ServicePrincipalProfileDetails {
-  parentPrincipal: Principal;
-}
-
-export interface UserDetails {
-  userPrincipalName: string;
+  type: 'User' | 'Group' | 'ServicePrincipal' | 'ManagedIdentity';
+  profile?: {
+    displayName?: string;
+    email?: string;
+  };
 }
 
 export interface PaginatedResponse<T> {
@@ -283,34 +262,12 @@ export interface OperationState {
 
 export type LongRunningOperationStatus = 'Undefined' | 'NotStarted' | 'Running' | 'Succeeded' | 'Failed';
 
-export interface OneLakeStoragePathMetadata {
-    contentLength: number;
-    lastModified: string;
-    creationTime: string;
-    permissions: string;
-    name: string;
-    isShortcut?: boolean;
-    accountType?: string;
-    isDirectory?: boolean;
-}
-
-export interface OneLakeStorageContainerMetadata {
-  paths: OneLakeStoragePathMetadata[];
-}
-
 // OneLake Shortcuts types
 export interface Shortcut {
   path: string;
   name: string;
   target: Target;
   transform?: Transform;
-}
-
-export enum ShortcutConflictPolicy {
-  Abort = "Abort",
-  GenerateUniqueName = "GenerateUniqueName",
-  CreateOrOverwrite = "CreateOrOverwrite",
-  OverwriteOnly = "OverwriteOnly"
 }
 
 export interface CreateShortcutRequest {
@@ -478,11 +435,31 @@ export interface ErrorDetail {
   target?: string;
 }
 
-export interface AsyncOperationIndicator {
-  operationId: string;
-  retryAfter?: number;
+// Long Running Operations types
+export interface LongRunningOperation {
+  id: string;
+  type: string;
+  status: OperationStatus;
+  createdDateTime: string;
+  lastUpdatedDateTime: string;
+  percentComplete?: number;
+  error?: OperationError;
+  result?: any;
 }
 
+export type OperationStatus = 'NotStarted' | 'Running' | 'Succeeded' | 'Failed' | 'Cancelled';
+
+export interface OperationError {
+  code: string;
+  message: string;
+  details?: OperationErrorDetail[];
+}
+
+export interface OperationErrorDetail {
+  code: string;
+  message: string;
+  target?: string;
+}
 
 // Enum for batch job states
 export enum BatchState {
@@ -798,41 +775,110 @@ export interface ListConnectionsResponse {
 
 /**
  * External Data Share for sharing data
- * Based on: https://learn.microsoft.com/en-us/rest/api/fabric/core/external-data-shares-provider
  */
 export interface ExternalDataShare {
   id: string;
-  paths: string[];
-  creatorPrincipal: Principal;
-  recipient: ExternalDataShareRecipient;
-  status: ExternalDataShareStatus;
-  expirationTimeUtc: string;
-  workspaceId: string;
-  itemId: string;
-  invitationUrl: string;
-  acceptedByTenantId?: string;
+  displayName: string;
+  description?: string;
+  shareKind: string;
+  recipient?: ExternalDataShareRecipient;
+  notification?: ExternalDataShareNotification;
+  paths?: ExternalDataSharePath[];
+  createdDate?: string;
+  modifiedDate?: string;
 }
 
 /**
  * External Data Share Recipient information
  */
 export interface ExternalDataShareRecipient {
-  userPrincipalName: string;
+  email?: string;
+  objectId?: string;
   tenantId?: string;
 }
 
 /**
- * The status of a given external data share
+ * External Data Share Notification settings
  */
-export type ExternalDataShareStatus = 'Pending' | 'Active' | 'Revoked' | 'InvitationExpired';
+export interface ExternalDataShareNotification {
+  enabled: boolean;
+  message?: string;
+}
+
+/**
+ * External Data Share Path configuration
+ */
+export interface ExternalDataSharePath {
+  path: string;
+  kind: string;
+}
 
 /**
  * Request to create an External Data Share
  */
 export interface CreateExternalDataShareRequest {
-  paths: string[];
+  displayName: string;
+  description?: string;
+  shareKind: string;
   recipient: ExternalDataShareRecipient;
+  notification?: ExternalDataShareNotification;
+  paths: ExternalDataSharePath[];
 }
+
+/**
+ * Request to update an External Data Share
+ */
+export interface UpdateExternalDataShareRequest {
+  displayName?: string;
+  description?: string;
+  notification?: ExternalDataShareNotification;
+  paths?: ExternalDataSharePath[];
+}
+
+/**
+ * External Data Share Provider
+ */
+export interface ExternalDataShareProvider {
+  id: string;
+  displayName: string;
+  description?: string;
+  dataSourceType: string;
+  connectionDetails?: ExternalDataShareProviderConnection;
+  createdDate?: string;
+  modifiedDate?: string;
+}
+
+/**
+ * External Data Share Provider connection details
+ */
+export interface ExternalDataShareProviderConnection {
+  endpoint?: string;
+  authentication?: string;
+  properties?: Record<string, any>;
+}
+
+/**
+ * Request to create an External Data Share Provider
+ */
+export interface CreateExternalDataShareProviderRequest {
+  displayName: string;
+  description?: string;
+  dataSourceType: string;
+  connectionDetails: ExternalDataShareProviderConnection;
+}
+
+/**
+ * Request to update an External Data Share Provider
+ */
+export interface UpdateExternalDataShareProviderRequest {
+  displayName?: string;
+  description?: string;
+  connectionDetails?: ExternalDataShareProviderConnection;
+}
+
+// ============================
+// External Data Shares Recipient Types
+// ============================
 
 /**
  * External data share invitation details

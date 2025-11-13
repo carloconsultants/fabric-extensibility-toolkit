@@ -1,0 +1,37 @@
+meta {
+  name: Save Theme (No Auth)
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{base_url}}/themes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "id": "unauthorized-theme-{{timestamp}}",
+    "themeName": "Unauthorized Theme",
+    "payload": {
+      "dataColors": ["#000000"],
+      "visualStyles": {}
+    }
+  }
+}
+
+tests {
+  test("Status should be 401", function() {
+    expect(res.getStatus()).to.equal(401);
+  });
+
+  test("Should return unauthorized message", function() {
+    expect(res.getBody()).to.be.a('string');
+    expect(res.getBody()).to.contain('Unauthorized access');
+  });
+}

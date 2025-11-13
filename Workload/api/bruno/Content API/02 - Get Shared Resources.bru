@@ -1,0 +1,48 @@
+meta {
+  name: Get Shared Resources
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/get-shared-resources?requestedResources=theme,project,scrims
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status should be 200 or 404 (no resources)", function() {
+    const status = res.getStatus();
+    expect([200, 404]).to.include(status);
+  });
+
+  test("If 200, response should contain shared resources structure", function() {
+    const status = res.getStatus();
+    if (status === 200) {
+      const data = res.getBody();
+      expect(data).to.have.property('sharedResources');
+      expect(data.sharedResources).to.be.an('array');
+    }
+  });
+
+  test("If shared resources exist, each item should have themeId", function() {
+    const status = res.getStatus();
+    if (status === 200) {
+      const data = res.getBody();
+      if (data.sharedResources && data.sharedResources.length > 0) {
+        data.sharedResources.forEach(resource => {
+          expect(resource).to.have.property('themeId');
+          expect(resource.themeId).to.not.be.empty;
+        });
+      }
+    }
+  });
+
+  test("If 404, response should indicate no resources found", function() {
+    const status = res.getStatus();
+    if (status === 404) {
+      const responseText = res.getBody();
+      expect(responseText).to.contain('No shared resources found');
+    }
+  });
+}

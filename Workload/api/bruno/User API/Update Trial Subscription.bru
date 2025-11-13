@@ -1,0 +1,52 @@
+meta {
+  name: Update Trial Subscription
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{base_url}}/users/{{test_user_id}}/trial
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+body:json {
+  {
+    "trialSubscription": "trial-premium-30days"
+  }
+}
+
+tests {
+  test("Status should be 200 or 404", function() {
+    expect(res.getStatus()).to.be.oneOf([200, 404]);
+  });
+
+  test("If successful, should return updated user", function() {
+    if (res.getStatus() === 200) {
+      expect(res.getBody()).to.have.property('trialSubscription');
+      expect(res.getBody().trialSubscription).to.equal('trial-premium-30days');
+    }
+  });
+}
+
+docs {
+  # Update Trial Subscription
+
+  Updates a user's trial subscription status.
+
+  ## Parameters
+  - `userId`: The user ID to update
+
+  ## Request Body
+  - `trialSubscription`: Trial subscription identifier
+
+  ## Response
+  - `200`: Trial updated successfully
+  - `404`: User not found
+  - `503`: Feature flag disabled
+}

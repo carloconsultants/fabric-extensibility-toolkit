@@ -1,0 +1,64 @@
+meta {
+  name: Post Login Event
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{base_url}}/login/event
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+body:json {
+  {
+    "eventType": "login",
+    "metadata": {
+      "loginProvider": "aad",
+      "timestamp": "2024-12-15T10:30:00Z",
+      "source": "web"
+    }
+  }
+}
+
+tests {
+  test("Status should be 200 or 503", function() {
+    expect(res.getStatus()).to.be.oneOf([200, 503]);
+  });
+
+  test("If successful, should return success status", function() {
+    if (res.getStatus() === 200) {
+      expect(res.getBody()).to.have.property('success');
+      expect(res.getBody().success).to.be.true;
+    }
+  });
+
+  test("If feature disabled, should return 503 with error", function() {
+    if (res.getStatus() === 503) {
+      expect(res.getBody()).to.have.property('errorCode');
+      expect(res.getBody().errorCode).to.equal('FEATURE_NOT_AVAILABLE');
+    }
+  });
+}
+
+docs {
+  # Post Login Event
+
+  Records a user login event for analytics and tracking.
+
+  ## Request Body
+  - `eventType`: Type of event (e.g., "login")
+  - `metadata`: Additional event metadata
+    - `loginProvider`: Authentication provider (e.g., "aad")
+    - `timestamp`: Event timestamp
+    - `source`: Login source (e.g., "web", "mobile")
+
+  ## Response
+  - `200`: Event recorded successfully
+  - `503`: Feature flag disabled
+}

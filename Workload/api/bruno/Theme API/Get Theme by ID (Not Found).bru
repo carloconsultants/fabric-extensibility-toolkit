@@ -1,0 +1,27 @@
+meta {
+  name: Get Theme by ID (Not Found)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/themes/{{non_existent_theme_id}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+tests {
+  test("Status should be 404", function() {
+    expect(res.getStatus()).to.equal(404);
+  });
+
+  test("Should return error message", function() {
+    expect(res.getBody()).to.be.a('string');
+    expect(res.getBody()).to.contain('not found');
+  });
+}

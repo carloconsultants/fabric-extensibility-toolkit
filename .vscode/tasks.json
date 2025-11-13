@@ -1,0 +1,138 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Start Frontend (Vite)",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "start"],
+      "options": {
+        "cwd": "${workspaceFolder}/Workload"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "dedicated"
+      },
+      "isBackground": true,
+      "problemMatcher": [
+        {
+          "pattern": [
+            {
+              "regexp": ".",
+              "file": 1,
+              "location": 2,
+              "message": 3
+            }
+          ],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": ".",
+            "endsPattern": "Local:   http://127.0.0.1:60006/"
+          }
+        }
+      ]
+    },
+    {
+      "label": "Start Backend (.NET Functions)",
+      "type": "shell",
+      "command": "func",
+      "args": ["start"],
+      "options": {
+        "cwd": "${workspaceFolder}/Workload/api"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always", 
+        "focus": false,
+        "panel": "dedicated"
+      },
+      "isBackground": true,
+      "dependsOn": "Build Functions",
+      "problemMatcher": [
+        {
+          "pattern": [
+            {
+              "regexp": ".",
+              "file": 1,
+              "location": 2,
+              "message": 3
+            }
+          ],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": ".",
+            "endsPattern": "Host lock lease acquired by instance ID"
+          }
+        }
+      ]
+    },
+    {
+      "label": "Build Functions",
+      "type": "shell",
+      "command": "dotnet",
+      "args": ["build"],
+      "options": {
+        "cwd": "${workspaceFolder}/Workload/api"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Start Azure SWA (Full Stack)",
+      "type": "shell",
+      "command": "swa",
+      "args": ["start", "--config", "pbitips-workload"],
+      "options": {
+        "cwd": "${workspaceFolder}/Workload"
+      },
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated"
+      },
+      "isBackground": true,
+      "problemMatcher": [
+        {
+          "pattern": [
+            {
+              "regexp": ".",
+              "file": 1,
+              "location": 2,
+              "message": 3
+            }
+          ],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": ".",
+            "endsPattern": "Azure Static Web Apps emulator started"
+          }
+        }
+      ]
+    },
+    {
+      "label": "Start Dev Environment (All Services)",
+      "dependsOrder": "parallel",
+      "dependsOn": [
+        "Start Frontend (Vite)",
+        "Start Backend (.NET Functions)"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true
+      }
+    }
+  ]
+}

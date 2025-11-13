@@ -1,0 +1,83 @@
+meta {
+  name: Save Theme
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base_url}}/themes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+body:json {
+  {
+    "id": "test-theme-{{$timestamp}}",
+    "themeName": "Test Theme",
+    "payload": {
+      "dataColors": [
+        "#1f77b4",
+        "#ff7f0e", 
+        "#2ca02c",
+        "#d62728",
+        "#9467bd",
+        "#8c564b",
+        "#e377c2",
+        "#7f7f7f"
+      ],
+      "visualStyles": {
+        "card": {
+          "backgroundColor": "#ffffff",
+          "borderColor": "#cccccc"
+        },
+        "table": {
+          "gridColor": "#eeeeee",
+          "headerBackgroundColor": "#f5f5f5"
+        }
+      }
+    }
+  }
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Should return created theme with ID", function() {
+    expect(res.getBody()).to.have.property('id');
+    expect(res.getBody()).to.have.property('name');
+    expect(res.getBody().name).to.equal('Test Theme');
+  });
+
+  test("Should return theme type", function() {
+    expect(res.getBody()).to.have.property('type');
+    expect(res.getBody().type).to.equal(0);
+  });
+
+  test("Should return isDefault flag", function() {
+    expect(res.getBody()).to.have.property('isDefault');
+    expect(res.getBody().isDefault).to.equal(false);
+  });
+
+  test("Should return created and modified dates", function() {
+    expect(res.getBody()).to.have.property('createdDate');
+    expect(res.getBody()).to.have.property('modifiedDate');
+  });
+
+  test("Should return user ID", function() {
+    expect(res.getBody()).to.have.property('userId');
+  });
+
+  // Store the created theme ID for use in other tests
+  test("Store created theme ID", function() {
+    if (res.getStatus() === 200) {
+      bru.setVar("created_theme_id", res.getBody().id);
+    }
+  });
+}

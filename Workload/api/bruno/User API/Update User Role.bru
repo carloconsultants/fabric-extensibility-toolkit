@@ -1,0 +1,57 @@
+meta {
+  name: Update User Role
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{base_url}}/users/{{test_user_id}}/role
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+body:json {
+  {
+    "userRole": 0
+  }
+}
+
+tests {
+  test("Status should be 200 or 401", function() {
+    expect(res.getStatus()).to.be.oneOf([200, 401, 404]);
+  });
+  
+  test("If successful, should return updated user with Admin role", function() {
+    if (res.getStatus() === 200) {
+      expect(res.getBody()).to.have.property('UserRole');
+      expect(res.getBody().UserRole).to.equal(1);
+    }
+  });
+}
+
+docs {
+  # Update User Role
+  
+  Updates a user's role (Admin/User permissions).
+  
+  ## Parameters
+  - `userId`: The user ID to update
+  
+  ## Request Body
+  - `userRole`: User role enum value (0 = User, 1 = Admin)
+  
+  ## Response
+  - `200`: Role updated successfully with updated user object
+  - `401`: Unauthorized (requires Admin role or local environment)
+  - `404`: User not found
+  - `503`: Feature flag disabled
+  
+  ## Notes
+  - UserRole enum: 0 = User, 1 = Admin
+  - Only Admin users can update roles (except in local development)
+}

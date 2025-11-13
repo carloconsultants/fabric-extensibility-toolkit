@@ -1,0 +1,16 @@
+meta {
+  name: Hardcoded Test
+  type: http
+  seq: 999
+}
+
+get {
+  url: http://localhost:7071/api/users
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: eyJ1c2VySWQiOiJ0ZXN0LXVzZXItMTIzIiwidXNlclJvbGVzIjoiVXNlciIsImlkZW50aXR5UHJvdmlkZXIiOiJhYWQiLCJ1c2VyRGV0YWlscyI6InRlc3QtdXNlci0xMjMifQo=
+}

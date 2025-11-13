@@ -6,6 +6,7 @@ import {
     NotificationToastDuration,
     NotificationType
 } from '@ms-fabric/workload-client';
+
 import { callPageOpen } from './controller/PageController';
 import { callNotificationOpen } from './controller/NotificationController';
 import { t } from 'i18next';
@@ -38,7 +39,7 @@ export async function initialize(params: InitParams) {
 
     workloadClient.action.onAction(async function ({ action, data }) {
         console.log(`🧭 Started action ${action} with data:`, data);
-        switch (action) {
+       switch (action) {
             case 'item.onCreationSuccess':
                 const { item: createdItem } = data as ItemCreationSuccessData;
                 var path = "/item-editor";
@@ -66,18 +67,18 @@ export async function initialize(params: InitParams) {
                     'Action executed via API',
                     NotificationType.Success,
                     NotificationToastDuration.Medium);
-
+            //TODO: how to support several items in the same action?
             case 'getItemSettings': {
-                const { item: createdItem } = data as ItemSettingContext;
+                const { item: { objectId } } = data as ItemSettingContext;
                 const itemTypeName = createdItem.itemType.substring(createdItem.itemType.lastIndexOf('.') + 1);
-
+                path = `/${itemTypeName}Item-editor`;
                 return [
                     {
                         name: 'about',
                         displayName: t('Item_About_Label'),
                         workloadSettingLocation: {
                             workloadName: sampleWorkloadName,
-                            route: `/${itemTypeName}Item-about-page/${createdItem.objectId}`,
+                            route: `/${itemTypeName}Item-about-page/${objectId}`,
                         },
                         workloadIframeHeight: '1000px'
                     },
@@ -89,13 +90,11 @@ export async function initialize(params: InitParams) {
                         },
                         workloadSettingLocation: {
                             workloadName: sampleWorkloadName,
-                            route: `/${itemTypeName}Item-settings-page/${createdItem.objectId}`,
+                            route: `/${itemTypeName}Item-settings-page/${objectId}`,
                         },
                         workloadIframeHeight: '1000px'
                     }
                 ];
-
-
             }
             case 'open.ClientSDKPlaygroundPage':
                 return workloadClient.page.open({
@@ -115,4 +114,5 @@ export async function initialize(params: InitParams) {
                 throw new Error('Unknown action received');
         }
     });
+    console.log('✅ Worker ready for use.');
 }

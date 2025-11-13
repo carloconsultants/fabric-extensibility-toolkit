@@ -1,0 +1,58 @@
+meta {
+  name: Post Google Analytics Event
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/post-google-analytics
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "eventData": {
+      "clientId": "test-client-123",
+      "events": [
+        {
+          "name": "page_view",
+          "params": {
+            "page_location": "/theme-generator",
+            "page_title": "Theme Generator",
+            "event_category": "ThemeGenerator"
+          }
+        }
+      ]
+    }
+  }
+}
+
+tests {
+  test("Status should be 200 or 400 (config missing)", function() {
+    const status = res.getStatus();
+    expect([200, 400]).to.include(status);
+  });
+
+  test("Response should contain success and message", function() {
+    const data = res.getBody();
+    expect(data).to.have.property('success');
+    expect(data).to.have.property('message');
+  });
+
+  test("If success is false, message should indicate reason", function() {
+    const data = res.getBody();
+    if (data.success === false) {
+      expect(data.message).to.not.be.empty;
+    }
+  });
+
+  test("Success should be boolean", function() {
+    const data = res.getBody();
+    expect(data.success).to.be.a('boolean');
+  });
+}

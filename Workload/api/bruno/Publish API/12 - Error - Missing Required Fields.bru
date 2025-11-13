@@ -1,0 +1,34 @@
+meta {
+  name: 12 - Error - Missing Required Fields
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{base_url}}/publish-item
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+body:json {
+  {
+    "PublishType": 0
+    // Missing ItemName, ItemId
+  }
+}
+
+tests {
+  test("Status is 400", function() {
+    expect(res.getStatus()).to.equal(400);
+  });
+  
+  test("Response has validation error", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('message');
+  });
+}

@@ -1,0 +1,38 @@
+meta {
+  name: Get User Themes (Cross-User Access)
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{base_url}}/users/{{admin_user_id}}/themes
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+tests {
+  test("Status should be 200 (local) or 401 (production)", function() {
+    // Note: In local development (APP_ENVIRONMENT=local), authorization is bypassed
+    // In production, this would return 401 Unauthorized
+    expect(res.getStatus()).to.be.oneOf([200, 401]);
+  });
+
+  test("If 401, should return unauthorized message", function() {
+    if (res.getStatus() === 401) {
+      expect(res.getBody()).to.be.a('string');
+      expect(res.getBody()).to.contain('Unauthorized access');
+    }
+  });
+
+  test("If 200, user can access admin themes in local dev", function() {
+    if (res.getStatus() === 200) {
+      // This is expected behavior in local development
+      expect(res.getBody()).to.have.property('themes');
+    }
+  });
+}

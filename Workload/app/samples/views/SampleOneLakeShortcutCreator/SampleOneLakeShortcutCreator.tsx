@@ -18,12 +18,7 @@ import { PageProps } from "../../../App";
 import { callDatahubOpen} from "../../../controller/DataHubController";
 import { Item } from "../../../clients/FabricPlatformTypes";
 
-export interface OneLakeShortcutCreatorProps extends PageProps {
-  allowedSourceItemTypes?: string[];
-  allowedTargetItemTypes?: string[];
-}
-
-export function OneLakeShortcutCreator(props: OneLakeShortcutCreatorProps) {
+export function OneLakeShortcutCreator({ workloadClient }: PageProps) {
   // Source and target item states
   const [shortcutName, setShortcutName] = useState<string>("");
 
@@ -40,9 +35,11 @@ export function OneLakeShortcutCreator(props: OneLakeShortcutCreatorProps) {
 
   // Select source item using datahub
   const selectSourceItem = async () => {
-    const result = await callDatahubOpen(
-      props.workloadClient,
-      ["Lakehouse", ...props.allowedSourceItemTypes],
+    const result = await callDatahubOpen( //) callDatahubWizardOpen(
+      workloadClient,
+      ["Lakehouse", 
+        process.env.WORKLOAD_NAME + "." + process.env.DEFAULT_ITEM_NAME,
+        process.env.WORKLOAD_NAME + ".CalculatorSample"],
       "Select source item for shortcut",
       false
     );
@@ -56,14 +53,24 @@ export function OneLakeShortcutCreator(props: OneLakeShortcutCreatorProps) {
 
   // Select target item using datahub
   const selectTargetItem = async () => {
-    const result = await callDatahubOpen(
-      props.workloadClient,
-      ["Lakehouse", ...props.allowedTargetItemTypes],
+    const result = await callDatahubOpen( //callDatahubWizardOpen(
+      workloadClient,
+      ["Lakehouse", 
+        process.env.WORKLOAD_NAME + "." + process.env.DEFAULT_ITEM_NAME,
+        process.env.WORKLOAD_NAME + ".CalculatorSample"],
       "Select target item for shortcut",
       false
     );
     
     if (result) {
+      /*const targetItem: undefined //= await getItem(result.id, workloadClient)
+      const targetGenericItem = {
+        workspaceId: result.workspaceId,
+        id: result.id,
+        displayName: "Unknown Item",
+        description: "",
+        type: undefined
+      } as GenericItem;*/
       setTargetItem(result);
       //setTargetShortcutPath(result.selectedPath || "Files");
       setResultMessage("");
@@ -82,7 +89,7 @@ export function OneLakeShortcutCreator(props: OneLakeShortcutCreatorProps) {
 
     try {
       // Create the OneLakeShortcutClient
-      const shortcutClient = new OneLakeShortcutClient(props.workloadClient);
+      const shortcutClient = new OneLakeShortcutClient(workloadClient);
       
       // Create the shortcut request object using Fabric API types
       const target: CreatableShortcutTarget = {

@@ -1,0 +1,27 @@
+meta {
+  name: Delete Theme
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{base_url}}/themes/{{created_theme_id}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Should return success response", function() {
+    expect(res.getBody()).to.have.property('success');
+    expect(res.getBody().success).to.equal(true);
+  });
+}

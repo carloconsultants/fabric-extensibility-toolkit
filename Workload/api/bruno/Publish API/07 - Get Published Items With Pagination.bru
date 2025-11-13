@@ -1,0 +1,55 @@
+meta {
+  name: 07 - Get Published Items With Pagination
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{base_url}}/published-items
+  body: none
+  auth: none
+}
+
+params:query {
+  itemTypes: theme,layout,project
+  isPublic: true
+  pageSize: 2
+  sortBy: title
+  sortOrder: asc
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response respects page size", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('pageSize', 2);
+    if (body.items.length > 0) {
+      expect(body.items.length).to.be.at.most(2);
+    }
+  });
+  
+  test("Items are sorted by title ascending", function() {
+    const body = res.getBody();
+    if (body.items.length > 1) {
+      for (let i = 1; i < body.items.length; i++) {
+        expect(body.items[i].title >= body.items[i-1].title).to.be.true;
+      }
+    }
+  });
+  
+  test("Has pagination metadata", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('hasMoreResults');
+    if (body.hasMoreResults) {
+      expect(body).to.have.property('continuationToken');
+    }
+  });
+}

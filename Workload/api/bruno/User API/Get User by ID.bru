@@ -1,0 +1,50 @@
+meta {
+  name: Get User by ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/users/{{test_user_id}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+tests {
+  test("Status should be 200 or 404", function() {
+    expect(res.getStatus()).to.be.oneOf([200, 404]);
+  });
+  
+  test("If 200, should return user object", function() {
+    if (res.getStatus() === 200) {
+      expect(res.getBody()).to.have.property('userId');
+      expect(res.getBody()).to.have.property('userName');
+      expect(res.getBody()).to.have.property('environment');
+    }
+  });
+  
+  test("If 404, should return error message", function() {
+    if (res.getStatus() === 404) {
+      expect(res.getBody()).to.be.a('string');
+    }
+  });
+}
+
+docs {
+  # Get User by ID
+  
+  Retrieves a specific user by their ID.
+  
+  ## Parameters
+  - `userId`: The user ID to retrieve
+  
+  ## Response
+  - `200`: User found and returned
+  - `404`: User not found
+  - `503`: Feature flag disabled
+}

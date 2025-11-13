@@ -1,4 +1,4 @@
-# GitHub Copilot Instructions for Microsoft Fabric Extensibility Toolkit
+# GitHub Copilot Instructions for PBI.tips Workload Template
 
 ## 📋 Overview
 
@@ -18,7 +18,7 @@ This file contains **GitHub Copilot-specific** instructions that extend the gene
 
 ### Agent Activation
 Use `@fabric` or these keywords for specialized GitHub Copilot assistance:
-- `fabric workload` - Extensibility Toolkit-specific development help with autocomplete
+- `pbitips workload` - Template-specific development help with autocomplete
 - `fabric item` - Item creation with intelligent code generation
 - `fabric auth` - Authentication patterns with secure defaults
 - `fabric api` - API integration with type inference

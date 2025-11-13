@@ -1,163 +1,193 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useLocation } from "react-router-dom";
-import { Stack } from "@fluentui/react";
-import { useTranslation } from "react-i18next";
-import { PageProps, ContextProps } from "../../App";
-import { ItemWithDefinition, getWorkloadItem, callGetItem, saveItemDefinition } from "../../controller/ItemCRUDController";
-import { callOpenSettings } from "../../controller/SettingsController";
-import { callNotificationOpen } from "../../controller/NotificationController";
-import { ItemEditorLoadingProgressBar } from "../../controls/ItemEditorLoadingProgressBar";
-import { HelloWorldItemDefinition, VIEW_TYPES, CurrentView } from "./HelloWorldItemModel";
-import { HelloWorldItemEditorEmpty } from "./HelloWorldItemEditorEmpty";
-import { HelloWorldItemEditorDefault } from "./HelloWorldItemEditorDefault";
+import { Label, Stack } from "@fluentui/react";
+import { Field, Input, TabValue } from "@fluentui/react-components";
+import React, { useEffect, useState, useCallback } from "react";
+import { ContextProps, PageProps } from "../../App";
+import { HelloWorldItemEditorRibbon } from "./HelloWorldItemEditorRibbon";
+import { callGetItem, getWorkloadItem, saveItemDefinition } from "../../controller/ItemCRUDController";
+import { ItemWithDefinition } from "../../controller/ItemCRUDController";
+import { useLocation, useParams } from "react-router-dom";
 import "../../styles.scss";
-import { HelloWorldItemRibbon } from "./HelloWorldItemRibbon";
-
+import { useTranslation } from "react-i18next";
+import { HelloWorldItemDefinition } from "./HelloWorldItemModel";
+import { HelloWorldItemEmpty } from "./HelloWorldItemEditorEmpty";
+import { ItemEditorLoadingProgressBar } from "../../controls/ItemEditorLoadingProgressBar";
+import { callNotificationOpen } from "../../controller/NotificationController";
+import { callOpenSettings } from "../../controller/SettingsController";
 
 export function HelloWorldItemEditor(props: PageProps) {
-  const { workloadClient } = props;
   const pageContext = useParams<ContextProps>();
-  const { t } = useTranslation();
-
-  // State management
-  const [isLoading, setIsLoading] = useState(true);
-  const [item, setItem] = useState<ItemWithDefinition<HelloWorldItemDefinition>>();
-  const [currentView, setCurrentView] = useState<CurrentView>(VIEW_TYPES.EMPTY);
-  const [hasBeenSaved, setHasBeenSaved] = useState<boolean>(false);
-
   const { pathname } = useLocation();
+  const { t } = useTranslation();
+  const { workloadClient } = props;
+  const [isUnsaved, setIsUnsaved] = useState<boolean>(true);
+  const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
+  const [editorItem, setEditorItem] = useState<ItemWithDefinition<HelloWorldItemDefinition>>(undefined);
+  const [selectedView, setSelectedView] = useState<TabValue>("");
+
+  // Computed value from editorItem (single source of truth)
+  const payload = editorItem?.definition?.message ?? "";
+
+  // Helper function to update item definition immutably
+  const updateItemDefinition = useCallback((updates: Partial<HelloWorldItemDefinition>) => {
+    setEditorItem(prevItem => {
+      if (!prevItem) return prevItem;
+      
+      return {
+        ...prevItem,
+        definition: {
+          ...prevItem.definition,
+          ...updates
+        }
+      };
+    });
+    setIsUnsaved(true);
+  }, []);
+
+  useEffect(() => {
+      loadDataFromUrl(pageContext, pathname);
+    }, [pageContext, pathname]);
+
+  async function SaveItem(definition?: HelloWorldItemDefinition) {
+    var successResult = await saveItemDefinition<HelloWorldItemDefinition>(
+      workloadClient,
+      editorItem.id,
+      definition || editorItem.definition);
+    setIsUnsaved(!successResult);
+    callNotificationOpen(
+            workloadClient,
+            t("ItemEditor_Saved_Notification_Title"),
+            t("ItemEditor_Saved_Notification_Text", { itemName: editorItem.displayName }),
+            undefined,
+            undefined
+        );
+  }
+
+  async function openSettings() {
+    if (editorItem) {      
+      //workloadClient.state.sharedState = {
+      //  item: editorItem;
+      //}
+      //TODO: this needs to be updated to use the Item instead of Itemv2
+      const item = await callGetItem(workloadClient, editorItem.id);
+      const result = await callOpenSettings(workloadClient, item, 'About');
+      console.log("Settings opened result:", result.value);
+    }
+  }
 
   async function loadDataFromUrl(pageContext: ContextProps, pathname: string): Promise<void> {
-    setIsLoading(true);
-    var LoadedItem: ItemWithDefinition<HelloWorldItemDefinition> = undefined;
+    setIsLoadingData(true);
+    var item: ItemWithDefinition<HelloWorldItemDefinition> = undefined;    
     if (pageContext.itemObjectId) {
       // for Edit scenario we get the itemObjectId and then load the item via the workloadClient SDK
       try {
-        LoadedItem = await getWorkloadItem<HelloWorldItemDefinition>(
+        item = await getWorkloadItem<HelloWorldItemDefinition>(
           workloadClient,
-          pageContext.itemObjectId,
+          pageContext.itemObjectId,          
         );
-
+        
         // Ensure item definition is properly initialized without mutation
-        if (!LoadedItem.definition) {
-          LoadedItem = {
-            ...LoadedItem,
+        if (!item.definition) {
+          item = {
+            ...item,
             definition: {
-              state: undefined,
+              message: undefined,
             }
           };
         }
-        else {
-          console.log('LoadedItem definition: ', LoadedItem.definition);
-        }
-
-        setItem(LoadedItem);
-        setCurrentView(!LoadedItem?.definition?.state ? VIEW_TYPES.EMPTY : VIEW_TYPES.GETTING_STARTED);
-
+        setEditorItem(item);        
       } catch (error) {
-        setItem(undefined);
-      }
+        setEditorItem(undefined);        
+      } 
     } else {
       console.log(`non-editor context. Current Path: ${pathname}`);
     }
-    setIsLoading(false);
+    setIsUnsaved(false);
+    if(item?.definition?.message) {
+      setSelectedView("home");
+    } else {
+      setSelectedView("empty");
+    }
+    setIsLoadingData(false);
   }
 
-  useEffect(() => {
-    setHasBeenSaved(false);
-  }, [currentView, item?.id]);
-
-  useEffect(() => {
-    loadDataFromUrl(pageContext, pathname);
-  }, [pageContext, pathname]);
-
-
-  const navigateToGettingStarted = () => {
-    setCurrentView(VIEW_TYPES.GETTING_STARTED);
-  };
-
-  const handleOpenSettings = async () => {
-    if (item) {
-      try {
-        const item_res = await callGetItem(workloadClient, item.id);
-        await callOpenSettings(workloadClient, item_res.item, 'About');
-      } catch (error) {
-        console.error('Failed to open settings:', error);
-      }
-    }
-  };
-
-  async function SaveItem() {
-    var successResult = await saveItemDefinition<HelloWorldItemDefinition>(
-      workloadClient,
-      item.id,
-      {
-        state: VIEW_TYPES.GETTING_STARTED
-      });
-    const wasSaved = Boolean(successResult);
-    setHasBeenSaved(wasSaved);
-    callNotificationOpen(
-      props.workloadClient,
-      t("ItemEditor_Saved_Notification_Title"),
-      t("ItemEditor_Saved_Notification_Text", { itemName: item.displayName }),
-      undefined,
-      undefined
-    );
+  function onUpdateItemDefinition(newDefinition: string) {
+    updateItemDefinition({ message: newDefinition });
   }
 
-  const isSaveEnabled = () => {
-    if (currentView === VIEW_TYPES.EMPTY) {
-      return false;
-    }
+  async function handleFinishEmpty(message: string) {
+    // Update the item definition with the new message
+    const newItemDefinition = { message: message };
+    updateItemDefinition(newItemDefinition);
+    
+    // Save with the updated definition directly to avoid race condition
+    await SaveItem(newItemDefinition);
+    
+    setSelectedView("home");
+  }
 
-    if (currentView === VIEW_TYPES.GETTING_STARTED) {
-      if (hasBeenSaved) {
-        return false;
-      }
-
-      if (!item?.definition?.state) {
-        return true;
-      }
-
-      return false;
-    }
-
-    return false;
-  };
-
-
-  // Show loading state
-  if (isLoading) {
+  if (isLoadingData) {
+    //making sure we show a loding indicator while the itme is loading
+    return (<ItemEditorLoadingProgressBar 
+      message={t("HelloWorldItemEditor_LoadingProgressBar_Text")} />);
+  }
+  else {
     return (
-      <ItemEditorLoadingProgressBar
-        message={t("HelloWorldItemEditor_Loading", "Loading item...")}
-      />
+      <Stack className="editor" data-testid="item-editor-inner">
+        <HelloWorldItemEditorRibbon
+            {...props}        
+            isRibbonDisabled={selectedView === "empty"}
+            isSaveButtonEnabled={isUnsaved}
+            saveItemCallback={SaveItem}
+            openSettingsCallback={openSettings}
+        />
+        <Stack className="main">
+          {["empty"].includes(selectedView as string) && (
+            <span>
+              <HelloWorldItemEmpty
+                workloadClient={workloadClient}
+                item={editorItem}
+                itemDefinition={editorItem?.definition}
+                onFinishEmpty={handleFinishEmpty}
+              />
+            </span>
+          )}
+          {["home"].includes(selectedView as string) && (
+          <span>
+              <h2>{t('HelloWorldItemEditor_Title')}</h2>            
+              <div> 
+                <div className="section" data-testid='item-editor-metadata' >
+                  <Field label={t('Item_ID_Label')} orientation="horizontal" className="field">
+                    <Label>{editorItem?.id} </Label>
+                  </Field>
+                  <Field label={t('Item_Type_Label')} orientation="horizontal" className="field">
+                    <Label>{editorItem?.type} </Label>
+                  </Field>
+                  <Field label={t('Item_Name_Label')} orientation="horizontal" className="field">
+                    <Label>{editorItem?.displayName} </Label>
+                  </Field>
+                  <Field label={t('Item_Description_Label')} orientation="horizontal" className="field">
+                    <Label>{editorItem?.description} </Label>
+                  </Field>
+                  <Field label={t('Workspace_ID_Label')} orientation="horizontal" className="field">
+                    <Label>{editorItem?.workspaceId} </Label>
+                  </Field>
+
+                  <Field label={t('HelloWorldItemEditor_Definition_Message_Label')} orientation="horizontal" className="field">
+                    <Input
+                      size="small"
+                      type="text"
+                      placeholder="Hello World!"
+                      value={payload}
+                      onChange={(e) => onUpdateItemDefinition(e.target.value)}              
+                      data-testid="payload-input"
+                    />
+                  </Field>
+                </div>
+              </div>
+          </span>
+          )}       
+        </Stack>
+      </Stack>
     );
   }
-
-  // Render appropriate view based on state
-  return (
-    <Stack className="editor" data-testid="item-editor-inner">
-      <HelloWorldItemRibbon
-        {...props}
-        isSaveButtonEnabled={isSaveEnabled()}
-        currentView={currentView}
-        saveItemCallback={SaveItem}
-        openSettingsCallback={handleOpenSettings}
-        navigateToGettingStartedCallback={navigateToGettingStarted}
-      />
-      {currentView === VIEW_TYPES.EMPTY ? (
-        <HelloWorldItemEditorEmpty
-          workloadClient={workloadClient}
-          item={item}
-          onNavigateToGettingStarted={navigateToGettingStarted}
-        />
-      ) : (
-        <HelloWorldItemEditorDefault
-          workloadClient={workloadClient}
-          item={item}
-        />
-      )}
-    </Stack>
-  );
 }

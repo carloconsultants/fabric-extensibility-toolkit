@@ -7,17 +7,12 @@ import {
   UpdateItemRequest,
   ItemDefinitionResponse,
   UpdateItemDefinitionRequest,
-  PaginatedResponse,
-  AsyncOperationIndicator
+  PaginatedResponse
 } from "./FabricPlatformTypes";
-import { LongRunningOperationsClient } from "./LongRunningOperationsClient";
 
 /**
  * API wrapper for Fabric Platform Item operations
  * Provides methods for managing items (reports, datasets, notebooks, etc.)
- * 
- * Based on the official Fabric REST API:
- * https://learn.microsoft.com/en-us/rest/api/fabric/core/items
  * 
  * Uses method-based scope selection:
  * - GET operations use read-only scopes
@@ -108,82 +103,36 @@ export class ItemClient extends FabricPlatformClient {
 
   /**
    * Returns the definition of the specified item
-   * This operation can return either an immediate result or a long-running operation
    * @param workspaceId The workspace ID
    * @param itemId The item ID
    * @param format Optional format parameter
-   * @returns Promise<ItemDefinitionResponse | LongRunningOperation>
+   * @returns Promise<ItemDefinitionResponse>
    */
   async getItemDefinition(
     workspaceId: string,
     itemId: string,
     format?: string
-  ): Promise<AsyncOperationIndicator> {
+  ): Promise<ItemDefinitionResponse> {
     let endpoint = `/workspaces/${workspaceId}/items/${itemId}/getDefinition`;
     if (format) {
       endpoint += `?format=${encodeURIComponent(format)}`;
     }
-    return this.post<AsyncOperationIndicator>(endpoint);
-  }
-
-  /**
-   * Returns the definition of the specified item with automatic LRO handling
-   * This method automatically polls long-running operations until completion
-   * @param workspaceId The workspace ID
-   * @param itemId The item ID
-   * @param format Optional format parameter
-   * @param pollingIntervalMs Polling interval in milliseconds (default: 2000)
-   * @param timeoutMs Timeout in milliseconds (default: 300000 - 5 minutes)
-   * @returns Promise<ItemDefinitionResponse>
-   */
-  async getItemDefinitionWithPolling(
-    workspaceId: string,
-    itemId: string,
-    format?: string,
-  ): Promise<ItemDefinitionResponse> {
-    const response = await this.getItemDefinition(workspaceId, itemId, format);
-    // Poll until completion
-    const operationsClient = new LongRunningOperationsClient(this.workloadClient);
-    return await operationsClient.waitForSuccessAndGetResult<ItemDefinitionResponse>(response);
+    return this.post<ItemDefinitionResponse>(endpoint);
   }
 
   /**
    * Updates the definition of the specified item
-   * This operation can return either an immediate result or a long-running operation
    * @param workspaceId The workspace ID
    * @param itemId The item ID
    * @param request UpdateItemDefinitionRequest
-   * @returns Promise<void | LongRunningOperation>
+   * @returns Promise<void>
    */
   async updateItemDefinition(
     workspaceId: string,
     itemId: string,
     request: UpdateItemDefinitionRequest
-  ): Promise<AsyncOperationIndicator> {
-    return this.post<AsyncOperationIndicator>(`/workspaces/${workspaceId}/items/${itemId}/updateDefinition`, request);
-  }
-
-  /**
-   * Updates the definition of the specified item with automatic LRO handling
-   * This method automatically polls long-running operations until completion
-   * @param workspaceId The workspace ID
-   * @param itemId The item ID
-   * @param request UpdateItemDefinitionRequest
-   * @param pollingIntervalMs Polling interval in milliseconds (default: 2000)
-   * @param timeoutMs Timeout in milliseconds (default: 300000 - 5 minutes)
-   * @returns Promise<void>
-   */
-  async updateItemDefinitionWithPolling(
-    workspaceId: string,
-    itemId: string,
-    request: UpdateItemDefinitionRequest
   ): Promise<void> {
-    const response = await this.updateItemDefinition(workspaceId, itemId, request);
-    
-    // Poll until completion
-    const operationsClient = new LongRunningOperationsClient(this.workloadClient);    
-    return await operationsClient.waitForSuccessAndGetResult(response);
-
+    await this.post<void>(`/workspaces/${workspaceId}/items/${itemId}/updateDefinition`, request);
   }
 
   // ============================

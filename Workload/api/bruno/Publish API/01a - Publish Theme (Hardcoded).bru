@@ -1,0 +1,44 @@
+meta {
+  name: 01a - Publish Theme (Hardcoded)
+  type: http
+  seq: 1.5
+}
+
+post {
+  url: {{base_url}}/publish-item
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+body:json {
+  {
+    "ItemName": "Hardcoded Blue Theme",
+    "ItemId": "hardcoded-theme-456",
+    "PublishType": 0,
+    "UserThemeId": "hardcoded-theme-456",
+    "PreviewImage": "https://example.com/hardcoded-preview.png"
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has published item with correct hardcoded values", function() {
+    const body = res.getBody();
+    
+    expect(body).to.have.property('id');
+    expect(body).to.have.property('itemName');
+    expect(body.itemName).to.equal('Hardcoded Blue Theme');
+    expect(body).to.have.property('itemId');
+    expect(body.itemId).to.equal('hardcoded-theme-456');
+    
+    console.log('Response body:', JSON.stringify(body, null, 2));
+  });
+}

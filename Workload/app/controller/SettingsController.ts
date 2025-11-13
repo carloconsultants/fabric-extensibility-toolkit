@@ -1,4 +1,4 @@
-import { Item, OpenItemSettingsConfig, OpenUIResult, WorkloadClientAPI, WorkloadSettings } from "@ms-fabric/workload-client";
+import { ItemLikeV2, OpenItemSettingsConfig, OpenUIResult, WorkloadClientAPI, WorkloadSettings } from "@ms-fabric/workload-client";
 
 // --- Settings API
 
@@ -54,17 +54,11 @@ export async function callSettingsOnChange(
  */
 export async function callOpenSettings(
     workloadClient: WorkloadClientAPI,
-    item: Item,
+    item: ItemLikeV2,
     selectedSettingId?: string): Promise<OpenUIResult> {
 
     const config: OpenItemSettingsConfig = {
-        item: {
-            objectId: item.id,
-            folderObjectId: item.workspaceId,
-            itemType: item.type,
-            displayName: item.displayName,
-            description: item.description
-        },
+        item,
         selectedSettingId
     };
 

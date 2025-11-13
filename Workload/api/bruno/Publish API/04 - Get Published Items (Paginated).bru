@@ -1,0 +1,50 @@
+meta {
+  name: 04 - Get Published Items (Paginated)
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{base_url}}/published-items
+  body: none
+  auth: none
+}
+
+params:query {
+  itemTypes: theme,layout
+  isPublic: true
+  pageSize: 10
+  sortBy: publishedAt
+  sortOrder: desc
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has paginated structure", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('items');
+    expect(body).to.have.property('pageSize');
+    expect(body).to.have.property('hasMoreResults');
+    expect(Array.isArray(body.items)).to.be.true;
+  });
+  
+  test("Items have expected properties", function() {
+    const body = res.getBody();
+    if (body.items.length > 0) {
+      const item = body.items[0];
+      expect(item).to.have.property('id');
+      expect(item).to.have.property('itemType');
+      expect(item).to.have.property('title');
+      expect(item).to.have.property('publishedAt');
+      expect(['theme', 'layout'].includes(item.itemType)).to.be.true;
+    }
+  });
+}

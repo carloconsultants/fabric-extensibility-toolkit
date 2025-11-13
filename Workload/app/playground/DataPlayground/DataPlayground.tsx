@@ -11,7 +11,6 @@ import { OneLakeShortcutCreator } from '../../samples/views/SampleOneLakeShortcu
 import "../../styles.scss";
 import { EventhouseExplorerComponent } from '../../samples/views/SampleEventhouseExplorer/SampleEventhouseExplorer';
 import { TabContentProps } from '../ClientSDKPlayground/ClientSDKPlaygroundModel';
-import { getConfiguredWorkloadItemTypes } from './../../controller/ConfigurationController';
 
 export function DataPlayground(props: TabContentProps) {
   const { workloadClient } = props;
@@ -48,17 +47,14 @@ export function DataPlayground(props: TabContentProps) {
             }}
             config={{
               initialItem: undefined,
-              allowedItemTypes: ["Lakehouse", ...getConfiguredWorkloadItemTypes()], // Allow all item types
+              allowedItemTypes: [], // Allow all item types
               allowItemSelection: true,
               refreshTrigger: Date.now()
             }}
           />
         )}
         {selectedTab === 'onelakeShortcutCreator' && (
-          <OneLakeShortcutCreator workloadClient={workloadClient}
-            allowedSourceItemTypes={["Lakehouse", ...getConfiguredWorkloadItemTypes()]}
-            allowedTargetItemTypes={["Lakehouse", ...getConfiguredWorkloadItemTypes()]}
-          />
+          <OneLakeShortcutCreator workloadClient={workloadClient} />
         )}
         {selectedTab === 'eventhouseExplorer' && (
           <EventhouseExplorerComponent workloadClient={workloadClient} />

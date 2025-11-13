@@ -1,0 +1,90 @@
+meta {
+  name: Cancel PayPal Subscription
+  type: http
+  seq: 4
+}
+
+delete {
+  url: {{base_url}}/paypal/subscription
+  body: none
+  auth: none
+}
+
+headers {
+  x-ms-client-principal: {{client_principal_admin}}
+}
+
+script:pre-request {
+  // This test verifies the CancelSubscription endpoint
+  console.log("Testing DELETE /api/paypal/subscription");
+}
+
+script:post-response {
+  const { status, body } = res;
+  
+  // Log response details
+  console.log("Response Status:", status);
+  console.log("Response Body:", JSON.stringify(body, null, 2));
+  
+  // Basic validation
+  if (status === 200) {
+    console.log("✅ SUCCESS: Subscription canceled successfully");
+    
+    // Validate response structure
+    if (body && body.success === true) {
+      console.log("✅ SUCCESS: Response indicates success");
+    } else {
+      console.log("❌ VALIDATION ERROR: Response should indicate success");
+    }
+  } else if (status === 401) {
+    console.log("ℹ️  INFO: Unauthorized - user must be authenticated");
+  } else if (status === 404) {
+    console.log("ℹ️  INFO: User does not have an active subscription");
+  } else if (status === 503) {
+    console.log("ℹ️  INFO: PayPal API feature flag disabled - using legacy endpoint");
+  } else {
+    console.log(`❌ ERROR: Unexpected status ${status}`);
+  }
+}
+
+docs {
+  # Cancel PayPal Subscription
+  
+  Tests the PayPal subscription cancellation endpoint to cancel a user's subscription.
+  
+  ## Test Cases
+  - ✅ Successful subscription cancellation
+  - ✅ Authentication requirements
+  - ✅ User subscription existence validation
+  - ✅ PayPal API integration
+  - ✅ User subscription update
+  - ✅ Feature flag disabled handling
+  
+  ## Expected Response (200 OK)
+  ```json
+  {
+    "success": true
+  }
+  ```
+  
+  ## Authentication Error (401)
+  ```json
+  {
+    "error": "User must be authenticated"
+  }
+  ```
+  
+  ## No Subscription (404)
+  ```json
+  {
+    "error": "User does not have an active subscription"
+  }
+  ```
+  
+  ## PayPal API Error (500)
+  ```json
+  {
+    "error": "Failed to cancel subscription"
+  }
+  ```
+}

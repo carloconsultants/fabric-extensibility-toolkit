@@ -4,40 +4,37 @@ export interface ItemMetadata {
     displayName: string;
 }
 
-export interface OneLakeObjectMetadata{
-    prefix: string;
+export interface TableMetadata {
     name: string;
     path: string;
-    isShortcut?: boolean;
-}
-
-export interface TableMetadata extends OneLakeObjectMetadata {
-    prefix: "Tables";
+    isSelected: boolean;
     schema?: string;
 }
 
-export interface FileMetadata extends OneLakeObjectMetadata {
-    prefix: "Files";
+export interface FileMetadata {
+    name: string;
+    path: string;
     isDirectory: boolean;
+    isSelected: boolean;
 }
 
 export interface OneLakeItemExplorerTablesTreeProps {
     allTablesInItem: TableMetadata[];
-    selectedTablePath?: string;
     onSelectTableCallback: (selectedTable: TableMetadata) => void;
 }
 
 export interface OneLakeItemExplorerFilesTreeProps {
     allFilesInItem: FileMetadata[];
-    selectedFilePath?: string;
     onSelectFileCallback: (selectedFile: FileMetadata) => void;
-    onDeleteFileCallback?: (filePath: string) => Promise<void>;
-    onDeleteFolderCallback?: (folderPath: string) => Promise<void>;
-    onCreateFolderCallback?: (parentPath: string) => Promise<void>;
-    onCreateShortcutCallback?: (parentPath: string) => Promise<void>;
-    // Required for dynamic shortcut content loading
-    workloadClient?: any; // WorkloadClientAPI
-    workspaceId?: string;
-    itemId?: string;
-    mode?: "view" | "edit";
+}
+
+export interface OneLakePath {
+    name: string;
+    isShortcut?: boolean;
+    accountType?: string;
+    isDirectory?: boolean;
+}
+
+export interface OneLakePathContainer {
+    paths: OneLakePath[];
 }

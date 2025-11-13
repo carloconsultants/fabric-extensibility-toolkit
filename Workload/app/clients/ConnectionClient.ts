@@ -13,9 +13,6 @@ import {
  * Fabric Connections API Client
  * Provides methods to interact with Fabric connections
  * 
- * Based on the official Fabric REST API:
- * https://learn.microsoft.com/en-us/rest/api/fabric/core/connections
- * 
  * Uses method-based scope selection:
  * - GET operations use read-only scopes
  * - POST/PUT/PATCH/DELETE operations use read-write scopes

@@ -1,0 +1,44 @@
+meta {
+  name: Test Feature Parity - Publish Item
+  type: http
+  seq: 99
+}
+
+post {
+  url: {{base_url}}/publish-item
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+body:json {
+  {
+    "ItemName": "Feature Parity Test Theme",
+    "ItemId": "12345678-1234-1234-1234-123456789abc",
+    "PublishType": 0,
+    "UserThemeId": "user-theme-456",
+    "PreviewImage": "https://example.com/preview.png"
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response matches original API format", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('success', true);
+    expect(body).to.have.property('resultObject', null);
+    
+    // Should NOT have these new API properties
+    expect(body).to.not.have.property('message');
+    expect(body).to.not.have.property('publishedGuid');
+    
+    console.log('Response:', JSON.stringify(body, null, 2));
+  });
+}

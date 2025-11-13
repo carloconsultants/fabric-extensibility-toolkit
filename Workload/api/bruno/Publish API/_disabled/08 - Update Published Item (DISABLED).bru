@@ -1,0 +1,54 @@
+meta {
+  name: 08 - Update Published Item
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{base_url}}/publish-item
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+body:json {
+  {
+    "ItemName": "Updated Beautiful Blue Theme",
+    "ItemId": "test-theme-123",
+    "PublishType": 0,
+    "UserThemeId": "test-theme-123",
+    "PreviewImage": "https://example.com/updated-preview.png"
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response shows updated item", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('success', true);
+    expect(body).to.have.property('message');
+    expect(body.message).to.equal('Item updated successfully');
+    expect(body).to.have.property('publishedGuid');
+    
+    // The publishedGuid should be the same as from the original publish
+    const originalGuid = bru.getVar('published_theme_guid');
+    expect(body.publishedGuid).to.equal(originalGuid);
+    
+    console.log('Update response:', JSON.stringify(body, null, 2));
+  });
+  
+  test("Updated timestamp is recent", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('updatedAt');
+    const updatedAt = new Date(body.updatedAt);
+    const now = new Date();
+    expect(now - updatedAt).to.be.lessThan(60000); // Less than 1 minute ago
+  });
+}

@@ -1,6 +1,6 @@
 import React from "react";
 import { Provider } from "react-redux";
-import { ClientSDKStore } from "./playground/ClientSDKPlayground/Store/Store";
+import { ClientSDKStore } from "./playground/ClientSDKPlaygroundStore/Store";
 import { Route, Router, Switch } from "react-router-dom";
 import { History } from "history";
 import { WorkloadClientAPI } from "@ms-fabric/workload-client";
@@ -8,7 +8,16 @@ import CustomItemSettings from "./items/HelloWorldItem/HelloWorldItemEditorSetti
 import CustomAbout from "./items/HelloWorldItem/HelloWorldItemEditorAboutPage";
 import { SamplePage, ClientSDKPlayground } from "./playground/ClientSDKPlayground/ClientSDKPlayground";
 import { DataPlayground } from "./playground/DataPlayground/DataPlayground";
-import { HelloWorldItemEditor} from "./items/HelloWorldItem/HelloWorldItemEditor";
+import { CognitiveSampleItemEditor } from "./samples/items/CognitiveSampleItem/CognitiveSampleItemEditor";
+import { HelloWorldItemEditor } from "./items/HelloWorldItem/HelloWorldItemEditor";
+import { CalculatorSampleItemEditor } from "./samples/items/CalculatorSampleItem/CalculatorSampleItemEditor";
+import { CalculatorSampleItemEditorSharedStatePage } from "./samples/items/CalculatorSampleItem/CalculatorSampleItemEditorSharedStatePage";
+import CalculatorItemEditorSettingsPage from "./samples/items/CalculatorSampleItem/CalculatorSampleItemEditorSettingsDialog";
+import CalculatorItemEditorAboutPage from "./samples/items/CalculatorSampleItem/CalculatorSampleItemEditorAboutDialog";
+// TODO: Implement Unity Catalog item or remove these references
+// import { UnityCatalogItemEditor } from "./items/UnityCatalogItem/UnityCatalogItemEditor";
+// import { UnityCatalogItemEditorSettingsPageWrapper } from "./items/UnityCatalogItem/UnityCatalogItemEditorSettingsPage";
+
 
 /*
     Add your Item Editor in the Route section of the App function below
@@ -48,23 +57,63 @@ export function App({ history, workloadClient }: AppProps) {
             </div>
         </Route>    
         <Switch>
-            {/* Routings for the Hello World Item Editor */}
+            {/* Test route for debugging */}
+            <Route exact path="/">
+                <div style={{ padding: '20px', backgroundColor: '#f0f0f0' }}>
+                    <h1>🎉 Workload is running!</h1>
+                    <p>Current URL: {window.location.href}</p>
+                    <p>Workload Name: {process.env.WORKLOAD_NAME}</p>
+                </div>
+            </Route>            
+            {/* Routing to the Empty Item Editor */}
             <Route path="/HelloWorldItem-editor/:itemObjectId">
                 <HelloWorldItemEditor
                     workloadClient={workloadClient} data-testid="HelloWorldItem-editor" />
-            </Route>
-            
-            <Route path="/HelloWorldItem-settings-page/:itemObjectId">
+            </Route>  
+            <Route path="/HelloWorldItem-settings-page">
                 <CustomItemSettings 
                     workloadClient={workloadClient}
                         data-testid="HelloWorldItem-settings-page" />
             </Route>
-            <Route path="/HelloWorldItem-about-page/:itemObjectId">
+            <Route path="/HelloWorldItem-about-page">
                 <CustomAbout  workloadClient={workloadClient} 
                     data-testid="HelloWorldItem-about-page" />
             </Route>
 
-             {/* Playground routes  can be deleted if not needed */}
+            {/* TODO: Implement Unity Catalog item routing or remove these references */}
+            {/* <Route path="/UnityCatalogItem-editor/:itemObjectId">
+                <UnityCatalogItemEditor
+                    workloadClient={workloadClient} data-testid="UnityCatalogItem-editor" />
+            </Route>
+            <Route path="/UnityCatalogItem-settings-page">
+                <UnityCatalogItemEditorSettingsPageWrapper
+                    workloadClient={workloadClient}
+                    data-testid="UnityCatalogItem-settings-page" />
+            </Route> */}
+
+            {/* Routing to the Calculator Sample Item Editor */}
+            <Route path="/CalculatorSampleItem-editor/:itemObjectId">
+                <CalculatorSampleItemEditor
+                    workloadClient={workloadClient} data-testid="CalculatorSampleItem-editor" />
+            </Route>
+            <Route path="/CalculatorSampleItem-settings-page">
+                <CalculatorItemEditorSettingsPage data-testid="CalculatorSampleItem-settings-page" />
+            </Route>
+            <Route path="/CalculatorSampleItem-about-page">
+                <CalculatorItemEditorAboutPage  data-testid="CalculatorSampleItem-about-page" />
+            </Route>
+            <Route path="/CalculatorSampleItem-shared-state-page">
+                <CalculatorSampleItemEditorSharedStatePage
+                    workloadClient={workloadClient} />
+            </Route> 
+
+            {/* Routing to the CognitiveSample Item Editor */}
+            <Route path="/CognitiveSampleItem-editor/:itemObjectId">
+                <CognitiveSampleItemEditor
+                    workloadClient={workloadClient} data-testid="CognitiveSampleItem-editor" />
+            </Route>
+
+            {/* Routing Samples & Playground */}
             <Route path="/client-sdk-playground">
                 <Provider store={ClientSDKStore}>
                     <ClientSDKPlayground workloadClient={workloadClient} />
@@ -77,6 +126,7 @@ export function App({ history, workloadClient }: AppProps) {
             <Route path="/sample-page">
                 <SamplePage workloadClient={workloadClient} />
             </Route>
+
         </Switch>
     </Router>;
 }

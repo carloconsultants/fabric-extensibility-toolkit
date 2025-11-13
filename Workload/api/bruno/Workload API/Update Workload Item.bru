@@ -1,0 +1,60 @@
+meta {
+  name: Update Workload Item
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{base_url}}/api/workload/workspaces/{{workspace_id}}/items/{{item_type}}/{{item_id}}
+  auth: none
+}
+
+headers {
+  x-ms-client-principal: {{client_principal_header}}
+  Content-Type: application/json
+}
+
+body:json {
+  {"displayName":"Updated Item Name","description":"Updated item description","metadata":{"customProperty":"customValue"}}
+}
+
+params:path {
+  workspace_id: sample-workspace
+  item_type: Report
+  item_id: sample-item-id
+}
+
+tests {
+  test("Status should be 200 for successful item update", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be JSON", function() {
+    expect(res.getHeader('content-type')).to.contain('application/json');
+  });
+  
+  test("Response should have updated item data", function() {
+    const data = res.getBody();
+    expect(data).to.be.an('object');
+  });
+}
+
+docs {
+  # Update Workload Item
+  
+  This endpoint updates a specific workload item in a Microsoft Fabric workspace.
+  
+  ## Path Parameters
+  - `workspaceId`: The ID of the workspace
+  - `itemType`: The type of the item (e.g., Report, Dataset, etc.)
+  - `itemId`: The ID of the specific item to update
+  
+  ## Request Body
+  JSON object containing the update data for the item.
+  
+  ## Authentication
+  Requires valid user authentication via x-ms-client-principal header.
+  
+  ## Response
+  Returns the updated item data from the Microsoft Fabric API.
+}

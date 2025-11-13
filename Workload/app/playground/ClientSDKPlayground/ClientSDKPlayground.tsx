@@ -8,8 +8,8 @@ import {
   Button,
 } from '@fluentui/react-components';
 import { Stack } from '@fluentui/react';
-import { RootState } from "../ClientSDKPlayground/Store/Store"
-import { setSelectedTab } from "../ClientSDKPlayground/Store/tabsSlice";
+import { RootState } from "../ClientSDKPlaygroundStore/Store"
+import { setSelectedTab } from "../ClientSDKPlaygroundStore/tabsSlice";
 import { ApiNotification } from './ApiNotification';
 import { ApiActionDialog } from './ActionDialog/ApiActionDialog';
 import { ApiPanelSettings } from './ApiPanelSettings';
@@ -21,6 +21,7 @@ import { ApiAuthentication } from './ApiAuthentication';
 import { PageProps } from '../../App';
 import { callNavigationBeforeNavigateAway, callNavigationNavigate } from "../../controller/NavigationController";
 import "../../styles.scss";
+import { ApiArtifactCrudPublic } from './ApiArtifactCrudPublic';
 import SampleSparkTerminal from '../../samples/views/SampleSparkTerminal/SampleSparkTerminal';
 import { TabContentProps } from './ClientSDKPlaygroundModel';
 
@@ -93,6 +94,9 @@ export function ClientSDKPlayground(props: TabContentProps) {
         )}
         {selectedApiTab === 'authenticationFrontend' && (
           <ApiAuthenticationFrontend workloadClient={workloadClient} />
+        )}
+        {selectedApiTab === 'publicJSCrud' && (
+          <ApiArtifactCrudPublic workloadClient={workloadClient} />
         )}
         {selectedApiTab === 'sparkTerminal' && (
           <SampleSparkTerminal workloadClient={workloadClient} />

@@ -1,0 +1,31 @@
+meta {
+  name: Get Shared Resources - Theme Only
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/get-shared-resources?requestedResources=theme
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status should be 200 or 404", function() {
+    const status = res.getStatus();
+    expect([200, 404]).to.include(status);
+  });
+
+  test("If resources exist, should contain only theme data", function() {
+    const status = res.getStatus();
+    if (status === 200) {
+      const data = res.getBody();
+      if (data.sharedResources && data.sharedResources.length > 0) {
+        data.sharedResources.forEach(resource => {
+          expect(resource).to.have.property('themeId');
+          // Since we're only requesting 'theme', other properties may be null/empty
+        });
+      }
+    }
+  });
+}

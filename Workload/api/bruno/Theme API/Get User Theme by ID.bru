@@ -1,0 +1,48 @@
+meta {
+  name: Get User Theme by ID
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{base_url}}/users/{{user_id}}/themes/{{theme_id}}
+  body: none
+  auth: none
+}
+
+headers {
+  x-ms-client-principal: {{auth_header}}
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Should return theme data structure", function() {
+    expect(res.getBody()).to.have.property('data');
+    expect(res.getBody().data).to.have.property('resultObject');
+  });
+
+  test("Result object should have required properties", function() {
+    const resultObject = res.getBody().data.resultObject;
+    expect(resultObject).to.have.property('theme');
+    expect(resultObject).to.have.property('project');
+    expect(resultObject).to.have.property('images');
+    expect(resultObject).to.have.property('ScrimsFamilyName');
+  });
+
+  test("Theme data should be valid JSON string", function() {
+    const themeData = res.getBody().data.resultObject.theme;
+    expect(themeData).to.be.a('string');
+    // Verify it's valid JSON
+    expect(() => JSON.parse(themeData)).to.not.throw();
+  });
+
+  test("Project data should be valid JSON string", function() {
+    const projectData = res.getBody().data.resultObject.project;
+    expect(projectData).to.be.a('string');
+    // Verify it's valid JSON
+    expect(() => JSON.parse(projectData)).to.not.throw();
+  });
+}

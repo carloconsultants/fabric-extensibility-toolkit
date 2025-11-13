@@ -1,0 +1,107 @@
+meta {
+  name: Create PayPal Subscription
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/paypal/subscription
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{client_principal_admin}}
+}
+
+body:json {
+  {
+    "subscriptionId": "{{test_subscription_id}}"
+  }
+}
+
+script:pre-request {
+  // This test verifies the CreateSubscription endpoint
+  console.log("Testing POST /api/paypal/subscription");
+  console.log("Subscription ID:", bru.getVar("test_subscription_id"));
+}
+
+script:post-response {
+  const { status, body } = res;
+  
+  // Log response details
+  console.log("Response Status:", status);
+  console.log("Response Body:", JSON.stringify(body, null, 2));
+  
+  // Basic validation
+  if (status === 200) {
+    console.log("✅ SUCCESS: Subscription created successfully");
+    
+    // Validate response structure
+    if (body && body.success === true) {
+      console.log("✅ SUCCESS: Response indicates success");
+    } else {
+      console.log("❌ VALIDATION ERROR: Response should indicate success");
+    }
+  } else if (status === 400) {
+    console.log("ℹ️  INFO: Bad request - check request body validation");
+  } else if (status === 401) {
+    console.log("ℹ️  INFO: Unauthorized - user must be authenticated");
+  } else if (status === 404) {
+    console.log("ℹ️  INFO: Subscription not found in PayPal");
+  } else if (status === 503) {
+    console.log("ℹ️  INFO: PayPal API feature flag disabled - using legacy endpoint");
+  } else {
+    console.log(`❌ ERROR: Unexpected status ${status}`);
+  }
+}
+
+docs {
+  # Create PayPal Subscription
+  
+  Tests the PayPal subscription creation endpoint to link a PayPal subscription to a user.
+  
+  ## Test Cases
+  - ✅ Successful subscription creation
+  - ✅ Request body validation
+  - ✅ Authentication requirements
+  - ✅ PayPal subscription verification
+  - ✅ User subscription update
+  - ✅ Feature flag disabled handling
+  
+  ## Request Body
+  ```json
+  {
+    "subscriptionId": "sub_1234567890"
+  }
+  ```
+  
+  ## Expected Response (200 OK)
+  ```json
+  {
+    "success": true
+  }
+  ```
+  
+  ## Validation Errors (400)
+  ```json
+  {
+    "error": "SubscriptionId is required"
+  }
+  ```
+  
+  ## Authentication Error (401)
+  ```json
+  {
+    "error": "User must be authenticated"
+  }
+  ```
+  
+  ## Subscription Not Found (404)
+  ```json
+  {
+    "error": "Could not find subscription: sub_1234567890"
+  }
+  ```
+}

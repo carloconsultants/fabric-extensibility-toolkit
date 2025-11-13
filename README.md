@@ -1,10 +1,19 @@
 
-# Microsoft Fabric Extensibility Toolkit
+# PBI.tips Workload Template
 
-Welcome to the Microsoft Fabric Extensibility Toolkit. This repository contains everything you need to start creating a new Extension for Fabric. Besides the source code itself with a HelloWorld Sample it also contains a comprehensive guide that covers everything you need to know to create custom Fabric items for your organization. We're here to assist you every step of the way, so please don't hesitate to reach out with any questions, via "Issues" tab in this GitHub repository. Happy developing!
+Welcome to the PBI.tips Workload Template - your starting point for building Microsoft Fabric workloads. This template repository contains everything you need to create custom Fabric workloads with modern development practices, including Vite + React frontend, .NET isolated Azure Functions backend, and Azure Static Web Apps deployment.
+
+## 🚀 What This Template Provides
+
+This template is built on the Microsoft Fabric Extensibility Toolkit foundation and enhanced with:
+- **Modern Frontend**: Vite + React + TypeScript + Fluent UI v9
+- **Scalable Backend**: .NET 8 isolated Azure Functions 
+- **Cloud-Native Deployment**: Azure Static Web Apps with integrated authentication
+- **Developer Experience**: Dev containers, GitHub Codespaces, automated setup
+- **Production Ready**: Best practices, security, monitoring, and CI/CD
 
 [!NOTE]
-The Microsoft Fabric Extensibility Toolkit is an evolution of the Workload Development Kit. If you are starting from scratch we encourage customers and partners to start building using the new Extensibility Toolkit which is focusing on easy fast development and enables Fabric Fundamentals out of the box.
+This template evolves the Microsoft Fabric Extensibility Toolkit with production-ready patterns used by PBI.tips for building scalable, maintainable Fabric workloads.
 
 ## Trademarks
 

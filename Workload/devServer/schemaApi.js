@@ -27,7 +27,7 @@ async function getWorkloadNameFromEnv() {
     }
     
     // Fallback to default if not found
-    const defaultName = 'Org.MyWorkload';
+    const defaultName = 'Org.MyWorkloadSample';
     console.log(`[Schema Server] Using fallback WORKLOAD_NAME: ${defaultName}`);
     return defaultName;
 }

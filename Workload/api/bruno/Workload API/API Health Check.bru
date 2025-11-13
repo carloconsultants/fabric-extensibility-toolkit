@@ -1,0 +1,49 @@
+meta {
+  name: API Health Check
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{base_url}}/api/workload?workspaceId=health-check
+  body: none
+  auth: none
+}
+
+headers {
+  x-ms-client-principal: {"userId":"health-check","userRoles":["anonymous","authenticated"],"claims":[],"identityProvider":"staticwebapps","userDetails":"health@example.com"}
+  Content-Type: application/json
+}
+
+tests {
+  test("API should be responsive", function() {
+    expect(res.getStatus()).to.be.oneOf([200, 400, 401, 403, 503]);
+  });
+  
+  test("Response should be JSON", function() {
+    expect(res.getHeader('content-type')).to.contain('application/json');
+  });
+  
+  test("Should not have server errors", function() {
+    expect(res.getStatus()).to.not.equal(500);
+    expect(res.getStatus()).to.not.equal(502);
+    expect(res.getStatus()).to.not.equal(504);
+  });
+}
+
+docs {
+  # API Health Check
+  
+  This test performs a basic health check on the Workload API to ensure:
+  1. The endpoint is accessible
+  2. It returns proper JSON responses
+  3. There are no server errors
+  
+  Expected behaviors:
+  - 200: Feature enabled and working
+  - 503: Feature disabled (expected with feature flag off)
+  - 401/403: Authentication issues (expected without proper auth)
+  - 400: Bad request (expected with invalid parameters)
+  
+  Server errors (500, 502, 504) indicate actual problems that need attention.
+}

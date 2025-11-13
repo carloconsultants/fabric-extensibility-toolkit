@@ -1,0 +1,46 @@
+meta {
+  name: Get Workload Info
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/api/workload?workspaceId={{workspace_id}}
+  body: none
+  auth: none
+}
+
+headers {
+  x-ms-client-principal: {{client_principal_header}}
+  Content-Type: application/json
+}
+
+tests {
+  test("Status should be 200 for successful workload info retrieval", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be JSON", function() {
+    expect(res.getHeader('content-type')).to.contain('application/json');
+  });
+  
+  test("Response should have workload data", function() {
+    const data = res.getBody();
+    expect(data).to.be.an('object');
+  });
+}
+
+docs {
+  # Get Workload Info
+  
+  This endpoint retrieves workload information for a specific Microsoft Fabric workspace.
+  
+  ## Query Parameters
+  - `workspaceId` (required): The ID of the workspace to get workload info for
+  
+  ## Authentication
+  Requires valid user authentication via x-ms-client-principal header.
+  
+  ## Response
+  Returns workload information from the Microsoft Fabric API.
+}

@@ -18,7 +18,13 @@ import {
   StatementRequest,
   StatementResponse
 } from '../../../clients/FabricPlatformTypes';
-import { SparkLivyClient } from '../../../clients/SparkLivyClient';
+import {
+  createSession,
+  submitStatement,
+  getSession,
+  getStatement,
+  cancelSession
+} from '../../../clients/SparkLivyClient';
 import { callDatahubOpen } from '../../../controller/DataHubController';
 import { Item } from '../../../clients/FabricPlatformTypes';
 
@@ -142,9 +148,6 @@ export const SampleSparkTerminal: React.FC<SampleSparkTerminalProps> = ({
   const [currentWorkspaceId, setCurrentWorkspaceId] = useState<string | undefined>(initialWorkspaceId);
   const [currentLakehouseId, setCurrentLakehouseId] = useState<string | undefined>(initialLakehouseId);
 
-  // Create SparkLivyClient instance
-  const sparkClient = new SparkLivyClient(workloadClient);
-
   // Auto-scroll to the bottom when new entries are added
   useEffect(() => {
     if (terminalBodyRef.current) {
@@ -235,7 +238,8 @@ export const SampleSparkTerminal: React.FC<SampleSparkTerminalProps> = ({
       };
 
       // Create the session
-      const response: SessionResponse = await sparkClient.createSession(
+      const response: SessionResponse = await createSession(
+        workloadClient,
         currentWorkspaceId,
         currentLakehouseId,
         sessionRequest
@@ -278,7 +282,7 @@ export const SampleSparkTerminal: React.FC<SampleSparkTerminalProps> = ({
           return false;
         }
         
-        const sessionInfo = await sparkClient.getSession(currentWorkspaceId, currentLakehouseId, sid);
+        const sessionInfo = await getSession(workloadClient, currentWorkspaceId, currentLakehouseId, sid);
         setSessionState(sessionInfo.state as SessionState);
         
         if (sessionInfo.state === SessionState.IDLE) {
@@ -315,7 +319,8 @@ export const SampleSparkTerminal: React.FC<SampleSparkTerminalProps> = ({
       setIsCancelling(true);
       addSystemMessage(`Cancelling session ${sessionId}...`);
       
-      const response = await sparkClient.cancelSession(
+      const response = await cancelSession(
+        workloadClient,
         currentWorkspaceId,
         currentLakehouseId,
         sessionId
@@ -345,7 +350,7 @@ export const SampleSparkTerminal: React.FC<SampleSparkTerminalProps> = ({
     if (!sessionId || !currentWorkspaceId || !currentLakehouseId) return;
     
     try {
-      const sessionInfo = await sparkClient.getSession(currentWorkspaceId, currentLakehouseId, sessionId);
+      const sessionInfo = await getSession(workloadClient, currentWorkspaceId, currentLakehouseId, sessionId);
       setSessionState(sessionInfo.state as SessionState);
     } catch (error: any) {
       console.error('Error checking session status:', error);
@@ -396,7 +401,8 @@ export const SampleSparkTerminal: React.FC<SampleSparkTerminalProps> = ({
       };
 
       // Submit the statement
-      const response = await sparkClient.submitStatement(
+      const response = await submitStatement(
+        workloadClient,
         currentWorkspaceId,
         currentLakehouseId,
         sessionId,
@@ -506,7 +512,7 @@ export const SampleSparkTerminal: React.FC<SampleSparkTerminalProps> = ({
   const checkStatementStatus = async (statementId: number): Promise<StatementResponse> => {
     // This would be implemented with getStatement
     try {
-      return await sparkClient.getStatement(currentWorkspaceId, currentLakehouseId, sessionId, statementId.toString());
+      return await getStatement(workloadClient, currentWorkspaceId, currentLakehouseId, sessionId, statementId.toString());
     } catch (error) {
       console.error('Error checking statement status:', error);
       throw error;

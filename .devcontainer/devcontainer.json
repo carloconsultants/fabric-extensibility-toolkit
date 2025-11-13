@@ -1,5 +1,5 @@
 {
-  "name": "Microsoft Fabric Workload Development Container",
+  "name": "PBI.tips Workload Template Development Container",
   "build": {
     "dockerfile": "Dockerfile",
     "context": "."
@@ -9,12 +9,19 @@
       "version": "lts"
     },
     "ghcr.io/devcontainers/features/azure-cli:1": {},
+    "ghcr.io/devcontainers/features/dotnet:2": {
+      "version": "8.0",
+      "installUsingApt": true
+    },
+    "ghcr.io/azure/azure-dev/azd:latest": {},
     "ghcr.io/devcontainers/features/powershell:1": {},
     "ghcr.io/devcontainers/features/common-utils:2": {
-      "installZsh": false,
-      "installOhMyZsh": false,
+      "installZsh": true,
+      "installOhMyZsh": true,
       "upgradePackages": true,
-      "username": "vscode"
+      "username": "vscode",
+      "userUid": "1000",
+      "userGid": "1000"
     }
   },
   "customizations": {
@@ -22,22 +29,45 @@
       "extensions": [
         "ms-vscode.powershell",
         "ms-vscode.azurecli",
+        "ms-vsliveshare.vsliveshare",
+        "ms-azuretools.vscode-containers",
         "GitHub.copilot",
-        "ms-dotnettools.vscode-dotnet-runtime"
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "ms-dotnettools.csdevkit",
+        "ms-azuretools.azure-dev",
+        "ms-azuretools.vscode-azurefunctions",
+        "ms-azuretools.vscode-azurestaticwebapps",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode"
       ],
       "settings": {
-        "terminal.integrated.defaultProfile.linux": "pwsh",
+        "terminal.integrated.defaultProfile.linux": "bash",
         "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "bash",
+            "icon": "terminal-bash"
+          },
           "pwsh": {
             "path": "pwsh",
             "icon": "terminal-powershell"
           }
-        }
+        },
+        "azureFunctions.deploySubpath": "api",
+        "azureFunctions.projectLanguage": "C#",
+        "azureFunctions.projectRuntime": "~4",
+        "azureFunctions.preDeployTask": "publish (functions)"
       }
     }
   },
-  "forwardPorts": [3000, 60006],
-  "postCreateCommand": "",
+  "forwardPorts": [3000, 60006, 7071],
+  "postCreateCommand": ".devcontainer/setup-dev-environment.sh",
+  "containerEnv": {
+    "AZURE_CLIENT_ID": "${localEnv:AZURE_CLIENT_ID}",
+    "AZURE_CLIENT_SECRET": "${localEnv:AZURE_CLIENT_SECRET}",
+    "AZURE_TENANT_ID": "${localEnv:AZURE_TENANT_ID}",
+    "FABRIC_CAPACITY_ID": "${localEnv:FABRIC_CAPACITY_ID}",
+    "WORKLOAD_NAME": "${localEnv:WORKLOAD_NAME}"
+  },
   "remoteUser": "vscode",
   "runArgs": ["--init"]
 }

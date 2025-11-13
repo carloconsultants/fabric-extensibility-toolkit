@@ -1,0 +1,46 @@
+meta {
+  name: Track Login Event
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base_url}}/analytics/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "userToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1c2VyX2lkIjoidGVzdC11c2VyLTEyMyIsInN1YiI6InRlc3QtdXNlci0xMjMifQ.example-token",
+    "clientId": "test-client-123", 
+    "sessionId": "session-456"
+  }
+}
+
+tests {
+  test("Status should be 200 or 400 (config missing)", function() {
+    const status = res.getStatus();
+    expect([200, 400]).to.include(status);
+  });
+
+  test("Response should contain success and message", function() {
+    const data = res.getBody();
+    expect(data).to.have.property('success');
+    expect(data).to.have.property('message');
+  });
+
+  test("Success should be boolean", function() {
+    const data = res.getBody();
+    expect(data.success).to.be.a('boolean');
+  });
+
+  test("Message should not be empty", function() {
+    const data = res.getBody();
+    expect(data.message).to.not.be.empty;
+  });
+}

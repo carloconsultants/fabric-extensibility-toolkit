@@ -1,0 +1,46 @@
+meta {
+  name: 02 - Publish Layout Item
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/publish-item
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+body:json {
+  {
+    "ItemName": "Modern Dashboard Layout",
+    "ItemId": "test-layout-456",
+    "PublishType": 1,
+    "UserThemeId": "",
+    "PreviewImage": "https://example.com/layout-preview.png",
+    "Layout": {
+      "type": "dashboard",
+      "sections": ["header", "content", "footer"]
+    }
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has published layout", function() {
+    const body = res.getBody();
+    
+    expect(body).to.have.property('id');
+    expect(body).to.have.property('itemName');
+    expect(body.itemName).to.equal('Modern Dashboard Layout');
+    expect(body).to.have.property('itemId');
+    expect(body.itemId).to.equal('test-layout-456');
+  });
+}

@@ -25,15 +25,13 @@ export async function initialize(params: InitParams) {
     workloadClient.action.onAction(async function ({ action, data }) {
         const { id } = data as ItemTabActionContext;
         switch (action) {
-            case 'item.tab.onInit':
-                try {
-                    const itemResult = await callGetItem(workloadClient, id);
-                    if (itemResult?.item?.displayName) {
-                        return { title: itemResult.item.displayName };
-                    } else {
-                        console.warn(`Item not found or missing displayName for ID: ${id}`);
-                        return { title: 'Untitled Item' }; // Provide a default title
-                    }
+            case 'item.tab.onInit':            
+                try{
+                    const itemResult = await callGetItem(
+                        workloadClient,
+                        id
+                    );
+                    return {title: itemResult.displayName};
                 } catch (error) {
                     console.error(
                         `Error loading the Item (object ID:${id})`,

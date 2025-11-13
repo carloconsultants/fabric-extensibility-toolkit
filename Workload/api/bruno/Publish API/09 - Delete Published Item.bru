@@ -1,0 +1,36 @@
+meta {
+  name: 09 - Delete Published Item
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{base_url}}/published-item
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+body:json {
+  {
+    "ItemType": 0,
+    "ItemId": "a68b0d11-8468-40e7-98e1-5892675dd4a8"
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response confirms deletion", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('success', true);
+    expect(body).to.have.property('message');
+    expect(body.message).to.include('deleted');
+  });
+}

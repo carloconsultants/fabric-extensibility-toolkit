@@ -1,0 +1,45 @@
+meta {
+  name: 00 - Variable Test
+  type: http
+  seq: 0
+}
+
+post {
+  url: {{base_url}}/publish-item
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+body:json {
+  {
+    "ItemName": "Variable Test Theme",
+    "ItemId": "variable-test-id",
+    "PublishType": 0,
+    "UserThemeId": "variable-test-id",
+    "PreviewImage": "https://example.com/test.png"
+  }
+}
+
+tests {
+  test("Status is 200 or validation error", function() {
+    const status = res.getStatus();
+    expect([200, 400, 404].includes(status)).to.be.true;
+  });
+  
+  test("Variables are resolved correctly", function() {
+    const baseUrl = bru.getVar('base_url');
+    const publishThemeId = bru.getVar('publish_theme_id');
+    
+    console.log('base_url:', baseUrl);
+    console.log('publish_theme_id:', publishThemeId);
+    
+    expect(baseUrl).to.not.equal('{{base_url}}');
+    expect(publishThemeId).to.not.equal('{{publish_theme_id}}');
+    expect(publishThemeId).to.equal('test-theme-123');
+  });
+}

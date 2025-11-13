@@ -1,0 +1,55 @@
+meta {
+  name: Get Theme by ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/themes/{{created_theme_id}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+tests {
+  test("Status should be 200 or 404", function() {
+    expect(res.getStatus()).to.be.oneOf([200, 404]);
+  });
+
+  test("If 200, should return complete theme object", function() {
+    if (res.getStatus() === 200) {
+      const theme = res.getBody();
+      expect(theme).to.have.property('id');
+      expect(theme).to.have.property('name');
+      expect(theme).to.have.property('type');
+      expect(theme).to.have.property('isDefault');
+      expect(theme).to.have.property('dataColors');
+      expect(theme).to.have.property('visualStyles');
+      expect(theme).to.have.property('createdDate');
+      expect(theme).to.have.property('modifiedDate');
+      expect(theme).to.have.property('userId');
+    }
+  });
+
+  test("If 200, dataColors should be an array", function() {
+    if (res.getStatus() === 200) {
+      expect(res.getBody().dataColors).to.be.an('array');
+    }
+  });
+
+  test("If 200, visualStyles should be an object", function() {
+    if (res.getStatus() === 200) {
+      expect(res.getBody().visualStyles).to.be.an('object');
+    }
+  });
+
+  test("If 404, should return error message", function() {
+    if (res.getStatus() === 404) {
+      expect(res.getBody()).to.be.a('string');
+    }
+  });
+}

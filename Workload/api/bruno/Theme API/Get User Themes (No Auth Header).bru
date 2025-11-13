@@ -1,0 +1,26 @@
+meta {
+  name: Get User Themes (No Auth Header)
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{base_url}}/users/{{test_user_id}}/themes
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+tests {
+  test("Status should be 401", function() {
+    expect(res.getStatus()).to.equal(401);
+  });
+
+  test("Should return unauthorized message", function() {
+    expect(res.getBody()).to.be.a('string');
+    expect(res.getBody()).to.contain('Unauthorized access');
+  });
+}

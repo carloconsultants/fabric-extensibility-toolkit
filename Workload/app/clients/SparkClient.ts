@@ -251,9 +251,7 @@ export interface LivySessions extends PaginatedResponse<LivySession> {
 /**
  * Spark Client for Microsoft Fabric
  * Provides comprehensive management of Spark settings, custom pools, and Livy sessions
- * 
- * Based on the official Fabric REST API:
- * https://learn.microsoft.com/en-us/rest/api/fabric/spark
+ * Based on the Fabric Spark REST API specification
  * 
  * Uses method-based scope selection:
  * - GET operations use read-only scopes

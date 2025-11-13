@@ -1,4 +1,5 @@
-import { GetItemDefinitionResult, GetItemResult, ItemDefinitionPart, PayloadType, UpdateItemDefinitionPayload, UpdateItemDefinitionResult, WorkloadClientAPI } from "@ms-fabric/workload-client";
+import { CreateItemParams, CreateItemResult, GetItemDefinitionResult, GetItemResult, ItemDefinitionPart, PayloadType, UpdateItemDefinitionPayload, UpdateItemDefinitionResult, UpdateItemResult, WorkloadClientAPI } from "@ms-fabric/workload-client";
+import { handleException } from "./ErrorHandlingController";
 import { Item } from "../clients/FabricPlatformTypes";
 
 /*
@@ -35,6 +36,108 @@ export enum ItemDefinitionPath {
     Platform = ".platform",
 }
 
+
+/**
+ * This function is used to create a new item in a specified workspace.
+ * It constructs the necessary parameters and invokes the createItem method of the WorkloadClientAPI.
+ * 
+ * It calls the 'itemCrud.createItem' function from the WorkloadClientAPI.
+ *
+ * @param {WorkloadClientAPI} workloadClient - An instance of the WorkloadClientAPI.
+ * @param {string} workspaceId - WorkspaceObjectId where the item will be created
+ * @param {string} itemType - Item type, as registered by the BE 
+ * @param {string} displayName - Name of the item
+ * @param {string} description - Description of the item (can be seen in item's Settings in Fabric)
+ * @returns {GetItemResult} - A wrapper for the item's data, after it has already been saved
+ */
+export async function callCreateItem<T>(
+    workloadClient: WorkloadClientAPI,
+    workspaceId: string,
+    itemType: string,
+    displayName: string,
+    description: string
+    ): Promise<Item> {
+
+
+    const params: CreateItemParams = {
+        workspaceObjectId: workspaceId,
+        payload: {
+            itemType,
+            displayName,
+            description,
+        }
+    };
+
+    try {
+        const result: CreateItemResult = await workloadClient.itemCrud.createItem(params);
+        console.log(`Created item id: ${result.objectId} with name: ${displayName} in workspace: ${workspaceId}`);
+        return {
+            id: result.objectId,
+            workspaceId: workspaceId,
+            type: itemType,
+            displayName,
+            description
+        };
+    }
+    catch (exception) {
+        console.error(`Failed to create item: ${exception}`);
+        throw exception;
+    }
+}
+
+/**
+ * This function is used to update an existing item in a specified workspace. 
+ * 
+ * It calls the 'itemCrud.updateItem' function from the WorkloadClientAPI.
+ * 
+ * 
+ * @param {WorkloadClientAPI} workloadClient - An instance of the WorkloadClientAPI.
+ * @param {string} itemId - The ObjectId of the item to update
+ * @param {string} displayName - The new display name for the item
+ * @param {string} description - The new description for the item
+ * @returns {GetItemResult} - A wrapper for the item's data
+ */
+export async function callUpdateItem<T>(
+    workloadClient: WorkloadClientAPI,
+    itemId: string,
+    displayName: string,
+    description: string): Promise<UpdateItemResult> {
+
+    try {
+        return await workloadClient.itemCrud.updateItem({
+            objectId: itemId,
+            etag: undefined,
+            payload: { displayName: displayName, description: description }
+        });
+    } catch (exception) {
+        console.error(`Failed updating Item ${itemId}`, exception);
+        return await undefined;
+    }
+}
+
+
+
+/**
+ * This function is used to delete an item by its ObjectId.
+ * It calls the 'itemCrud.deleteItem' function from the WorkloadClientAPI.
+ * 
+ * @param {WorkloadClientAPI} workloadClient - An instance of the WorkloadClientAPI.
+ * @param {string} itemId - The ObjectId of the item to delete
+ */
+export async function callDeleteItem(
+    workloadClient: WorkloadClientAPI,
+    itemId: string,
+    isRetry?: boolean): Promise<boolean> {
+    try {
+        const result = await workloadClient.itemCrud.deleteItem({ objectId: itemId });
+        console.log(`Delete result for item ${itemId}: ${result.success}`);
+        return result.success;
+    } catch (exception) {
+        console.error(`Failed deleting Item ${itemId}`, exception);
+        return await handleException(exception, workloadClient, isRetry, callDeleteItem, itemId);
+    }
+}
+
 /**
  * This function is used to fetch an item by its ObjectId.
  * It calls the 'itemCrud.getItem' function from the WorkloadClientAPI.
@@ -52,7 +155,7 @@ export async function callGetItem(
     itemId: string, 
     isRetry?: boolean): Promise<GetItemResult> {
     try {
-        const item: GetItemResult = await workloadClient.itemCrud.getItem({ itemId });
+        const item: GetItemResult = await workloadClient.itemCrud.getItem({ objectId: itemId });
         console.log(`Successfully fetched item ${itemId}: ${item}`)
 
         return item;
@@ -158,7 +261,7 @@ export async function callUpdateItemDefinition(
 
     const itemDefinitions: UpdateItemDefinitionPayload = buildPublicAPIPayloadWithParts(definitionParts);
     try {
-        return await workloadClient.itemCrud.updateItemDefinition({
+        return await workloadClient.itemCrudPublic.updateItemDefinition({
             itemId: itemId,
             payload: itemDefinitions,
             updateMetadata: updateMetadata
@@ -183,10 +286,12 @@ export async function callUpdateItemDefinition(
  */ 
 export async function callGetItemDefinition(
     workloadClient: WorkloadClientAPI,
-    itemId: string): Promise<GetItemDefinitionResult> {
+    itemId: string,
+    format?: string): Promise<GetItemDefinitionResult> {
     try {
-        const itemDefinition: GetItemDefinitionResult = await workloadClient.itemCrud.getItemDefinition({
+        const itemDefinition: GetItemDefinitionResult = await workloadClient.itemCrudPublic.getItemDefinition({
             itemId: itemId,
+            format: format
         });
         console.log(`Successfully fetched item definition for item ${itemId}: ${itemDefinition}`);
         return itemDefinition;
@@ -203,12 +308,12 @@ export async function callGetItemDefinition(
  * 
  * If the item definition parts are not available or parsing fails, it will log an error and return a WorkloadItem with undefined payload.
  * 
- * @param {GetItemResult} itemResult - The item result to convert.
+ * @param {GetItemResult} item - The item result to convert.
  * @param {GetItemDefinitionResult} itemDefinitionResult - The item definition result to convert.
  * @returns {ItemWithDefinition<T>} - The converted WorkloadItem.
  */
 export function convertGetItemResultToWorkloadItem<T>(
-        itemResult: GetItemResult,
+        item: GetItemResult, 
         itemDefinitionResult: GetItemDefinitionResult, 
         defaultDefinition?: T): ItemWithDefinition<T> {            
     let payload: T;
@@ -219,19 +324,19 @@ export function convertGetItemResultToWorkloadItem<T>(
             payload = itemMetadata ? JSON.parse(atob(itemMetadata?.payload)) : undefined;
 
             const platformDefinition = itemDefinitionResult.definition.parts.find((part) => part.path === ItemDefinitionPath.Platform);
-            const itemPlatformPayload = platformDefinition ? JSON.parse(atob(platformDefinition?.payload)) : undefined;
+            const itemPlatformPayload= platformDefinition ? JSON.parse(atob(platformDefinition?.payload)) : undefined;
             itemPlatformMetadata = itemPlatformPayload ? itemPlatformPayload.metadata : undefined;
         } catch (payloadParseError) {
-            console.error(`Failed parsing payload for item ${itemResult?.item.id}, itemDefinitionResult: ${itemDefinitionResult}`, payloadParseError);
+            console.error(`Failed parsing payload for item ${item.objectId}, itemDefinitionResult: ${itemDefinitionResult}`, payloadParseError);
         }
     }
 
     return {
-        id: itemResult?.item.id,
-        workspaceId: itemResult?.item.workspaceId,
-        type: itemPlatformMetadata?.type ?? itemResult?.item.type,
-        displayName: itemPlatformMetadata?.displayName ?? itemResult?.item.displayName,
-        description: itemPlatformMetadata?.description ?? itemResult?.item.description,
+        id: item.objectId,
+        workspaceId: item.folderObjectId,
+        type: itemPlatformMetadata?.type ?? item.itemType,
+        displayName: itemPlatformMetadata?.displayName ?? item.displayName,
+        description: itemPlatformMetadata?.description ?? item.description,
         definition: payload ?? defaultDefinition,
     };
 }

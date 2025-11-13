@@ -1,0 +1,76 @@
+meta {
+  name: Validation Tests - Missing Fields
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{base_url}}/paypal/subscription
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{client_principal_admin}}
+}
+
+body:json {
+  {
+    "invalidField": "test"
+  }
+}
+
+script:pre-request {
+  // This test verifies request validation for PayPal endpoints
+  console.log("Testing POST /api/paypal/subscription - Missing Required Fields");
+}
+
+script:post-response {
+  const { status, body } = res;
+  
+  // Log response details
+  console.log("Response Status:", status);
+  console.log("Response Body:", JSON.stringify(body, null, 2));
+  
+  // Validation tests
+  if (status === 400) {
+    console.log("✅ SUCCESS: Validation error returned as expected");
+    
+    if (body && body.error && body.error.includes("SubscriptionId")) {
+      console.log("✅ SUCCESS: Proper validation message for missing SubscriptionId");
+    } else {
+      console.log("❌ VALIDATION ERROR: Should mention missing SubscriptionId");
+    }
+  } else if (status === 503) {
+    console.log("ℹ️  INFO: PayPal API feature flag disabled - using legacy endpoint");
+  } else {
+    console.log(`❌ ERROR: Expected 400 Bad Request, got ${status}`);
+  }
+}
+
+docs {
+  # Validation Tests - Missing Required Fields
+  
+  Tests request validation for PayPal endpoints to ensure proper error handling.
+  
+  ## Test Cases
+  - ✅ Missing subscriptionId validation
+  - ✅ Invalid request body handling
+  - ✅ Proper error messages
+  - ✅ HTTP status code validation
+  
+  ## Request Body (Invalid)
+  ```json
+  {
+    "invalidField": "test"
+  }
+  ```
+  
+  ## Expected Response (400 Bad Request)
+  ```json
+  {
+    "error": "SubscriptionId is required"
+  }
+  ```
+}

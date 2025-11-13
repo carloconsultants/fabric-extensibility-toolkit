@@ -1,0 +1,79 @@
+meta {
+  name: Create User Theme POST
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{base_url}}/users/{{user_id}}/themes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+body:json {
+  {
+    "themeName": "New User Theme via POST",
+    "payload": {
+      "dataColors": [
+        "#e74c3c",
+        "#3498db", 
+        "#2ecc71",
+        "#f39c12",
+        "#9b59b6",
+        "#1abc9c",
+        "#34495e",
+        "#95a5a6"
+      ],
+      "visualStyles": {
+        "card": {
+          "backgroundColor": "#fafafa",
+          "borderColor": "#bdc3c7"
+        },
+        "table": {
+          "gridColor": "#ecf0f1",
+          "headerBackgroundColor": "#d5dbdb"
+        },
+        "chart": {
+          "axisColor": "#7f8c8d",
+          "labelColor": "#2c3e50"
+        }
+      }
+    }
+  }
+}
+
+vars:post-response {
+  new_theme_id: res.body.id
+}
+
+tests {
+  test("Status should be 201 (Created)", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("Should return created theme with ID", function() {
+    expect(res.getBody()).to.have.property('id');
+    expect(res.getBody().id).to.not.be.empty;
+  });
+
+  test("Should return correct theme name", function() {
+    expect(res.getBody()).to.have.property('name');
+    expect(res.getBody().name).to.equal('New User Theme via POST');
+  });
+
+  test("Should have created and modified dates", function() {
+    expect(res.getBody()).to.have.property('createdDate');
+    expect(res.getBody()).to.have.property('modifiedDate');
+  });
+
+  test("Should store new theme ID for further tests", function() {
+    expect(res.getBody()).to.have.property('id');
+    const themeId = res.getBody().id;
+    expect(themeId).to.not.be.empty;
+  });
+}

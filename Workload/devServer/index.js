@@ -11,9 +11,13 @@ const schemaApi = require('./schemaApi')
  * @param {object} app Express application
  */
 function registerDevServerApis(app) {
+  console.log('*** Starting Dev Server API Registration ***');
+  
   console.log('*** Mounting Manifest API ***');
   app.use('/', manifestApi);
   app.use('/', schemaApi);
+  
+  console.log('*** Dev Server API Registration Complete ***');
 }
 
 module.exports = {

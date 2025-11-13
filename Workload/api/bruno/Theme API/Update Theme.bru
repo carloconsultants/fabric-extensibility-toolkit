@@ -1,0 +1,76 @@
+meta {
+  name: Update Theme
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{base_url}}/themes
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+body:json {
+  {
+    "id": "{{created_theme_id}}",
+    "themeName": "Updated Test Theme",
+    "payload": {
+      "dataColors": [
+        "#ff0000",
+        "#00ff00", 
+        "#0000ff",
+        "#ffff00",
+        "#ff00ff",
+        "#00ffff",
+        "#800080",
+        "#ffa500"
+      ],
+      "visualStyles": {
+        "card": {
+          "backgroundColor": "#f8f8f8",
+          "borderColor": "#333333"
+        },
+        "table": {
+          "gridColor": "#cccccc",
+          "headerBackgroundColor": "#e0e0e0"
+        },
+        "chart": {
+          "axisColor": "#666666",
+          "labelColor": "#333333"
+        }
+      }
+    }
+  }
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Should return updated theme", function() {
+    expect(res.getBody()).to.have.property('id');
+    expect(res.getBody()).to.have.property('name');
+    expect(res.getBody().name).to.equal('Updated Test Theme');
+  });
+
+  test("Should reflect updated type", function() {
+    expect(res.getBody()).to.have.property('type');
+    expect(res.getBody().type).to.equal(1);
+  });
+
+  test("Should reflect updated isDefault flag", function() {
+    expect(res.getBody()).to.have.property('isDefault');
+    expect(res.getBody().isDefault).to.equal(true);
+  });
+
+  test("ModifiedDate should be updated", function() {
+    expect(res.getBody()).to.have.property('modifiedDate');
+    expect(res.getBody()).to.have.property('createdDate');
+  });
+}

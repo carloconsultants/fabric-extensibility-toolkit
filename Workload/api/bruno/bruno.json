@@ -1,0 +1,13 @@
+{
+  "version": "1",
+  "name": "PowerBI.tips .NET API",
+  "type": "collection",
+  "ignore": ["node_modules", ".git", "**/Publish API/_disabled/**"],
+  "vars": {
+    "base_url": "http://localhost:7071/api",
+    "auth_header": "eyJ1c2VySWQiOiJ0ZXN0LXVzZXItMTIzIiwidXNlclJvbGVzIjoiVXNlciIsImlkZW50aXR5UHJvdmlkZXIiOiJhYWQiLCJ1c2VyRGV0YWlscyI6InRlc3QtdXNlci0xMjMifQo=",
+    "test_user_id": "test-user-123",
+    "admin_user_id": "admin-user-456",
+    "test_report_id": "b1aee131-4171-4a79-aef2-566d323093eb"
+  }
+}

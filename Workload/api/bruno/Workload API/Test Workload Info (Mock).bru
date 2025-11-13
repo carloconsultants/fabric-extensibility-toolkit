@@ -1,0 +1,73 @@
+meta {
+  name: Test Workload Info (Mock)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/api/workload?workspaceId=test-workspace-123
+  body: none
+  auth: none
+}
+
+headers {
+  x-ms-client-principal: {"userId":"test-user","userRoles":["anonymous","authenticated"],"claims":[],"identityProvider":"staticwebapps","userDetails":"test@example.com"}
+  Content-Type: application/json
+}
+
+tests {
+  test("Status should be 200 for successful workload info retrieval", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be JSON", function() {
+    expect(res.getHeader('content-type')).to.contain('application/json');
+  });
+  
+  test("Response should have workload data structure", function() {
+    const data = res.getBody();
+    expect(data).to.be.an('object');
+    expect(data).to.have.property('workspaceId');
+    expect(data).to.have.property('items');
+    expect(data).to.have.property('metadata');
+  });
+  
+  test("Workspace ID should match request", function() {
+    const data = res.getBody();
+    expect(data.workspaceId).to.equal('test-workspace-123');
+  });
+  
+  test("Items should be an array", function() {
+    const data = res.getBody();
+    expect(data.items).to.be.an('array');
+  });
+  
+  test("Metadata should contain expected properties", function() {
+    const data = res.getBody();
+    expect(data.metadata).to.be.an('object');
+    expect(data.metadata).to.have.property('status');
+    expect(data.metadata).to.have.property('itemCount');
+  });
+}
+
+docs {
+  # Test Workload Info (Mock)
+  
+  This test uses a mock workspace ID to verify the workload info endpoint functionality.
+  Since we don't have access to real Fabric workspaces, this returns mock data.
+  
+  ## Expected Response Structure:
+  ```json
+  {
+    "workspaceId": "test-workspace-123",
+    "items": [],
+    "metadata": {
+      "status": "active",
+      "itemCount": 0
+    }
+  }
+  ```
+  
+  ## Authentication
+  Uses a mock x-ms-client-principal header for testing.
+}

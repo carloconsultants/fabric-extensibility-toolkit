@@ -1,0 +1,89 @@
+meta {
+  name: Test Update Item (Mock)
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{base_url}}/api/workload/workspaces/test-workspace-123/items/Report/test-report-456
+  body: json
+  auth: none
+}
+
+headers {
+  x-ms-client-principal: {"userId":"test-user","userRoles":["anonymous","authenticated"],"claims":[],"identityProvider":"staticwebapps","userDetails":"test@example.com"}
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "displayName": "Updated Test Report",
+    "description": "This is a test report updated via API",
+    "properties": {
+      "customProperty": "testValue",
+      "lastModified": "2025-10-24T18:30:00Z"
+    }
+  }
+}
+
+tests {
+  test("Status should be 200 for successful item update", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be JSON", function() {
+    expect(res.getHeader('content-type')).to.contain('application/json');
+  });
+  
+  test("Response should have update confirmation", function() {
+    const data = res.getBody();
+    expect(data).to.be.an('object');
+    expect(data).to.have.property('success');
+    expect(data).to.have.property('itemId');
+    expect(data).to.have.property('message');
+    expect(data).to.have.property('updatedProperties');
+  });
+  
+  test("Update should be successful", function() {
+    const data = res.getBody();
+    expect(data.success).to.be.true;
+  });
+  
+  test("Item ID should match request", function() {
+    const data = res.getBody();
+    expect(data.itemId).to.equal('test-report-456');
+  });
+  
+  test("Updated properties should be returned", function() {
+    const data = res.getBody();
+    expect(data.updatedProperties).to.be.an('object');
+  });
+}
+
+docs {
+  # Test Update Item (Mock)
+  
+  This test updates a workload item using mock data to verify the update functionality.
+  
+  ## Request Body Structure:
+  ```json
+  {
+    "displayName": "Updated Test Report",
+    "description": "This is a test report updated via API",
+    "properties": {
+      "customProperty": "testValue",
+      "lastModified": "2025-10-24T18:30:00Z"
+    }
+  }
+  ```
+  
+  ## Expected Response Structure:
+  ```json
+  {
+    "success": true,
+    "itemId": "test-report-456",
+    "message": "Item updated successfully",
+    "updatedProperties": {...}
+  }
+  ```
+}

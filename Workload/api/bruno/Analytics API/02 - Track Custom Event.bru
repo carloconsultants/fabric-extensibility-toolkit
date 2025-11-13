@@ -1,0 +1,51 @@
+meta {
+  name: Track Custom Event
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/analytics/events
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "action": "theme_downloaded",
+    "category": "Themes",
+    "label": "custom-theme-1",
+    "value": 1,
+    "params": {
+      "theme_type": "custom",
+      "user_subscription": "premium"
+    }
+  }
+}
+
+tests {
+  test("Status should be 200 or 400 (config missing)", function() {
+    const status = res.getStatus();
+    expect([200, 400]).to.include(status);
+  });
+
+  test("Response should contain success and message", function() {
+    const data = res.getBody();
+    expect(data).to.have.property('success');
+    expect(data).to.have.property('message');
+  });
+
+  test("Success should be boolean", function() {
+    const data = res.getBody();
+    expect(data.success).to.be.a('boolean');
+  });
+
+  test("Message should not be empty", function() {
+    const data = res.getBody();
+    expect(data.message).to.not.be.empty;
+  });
+}

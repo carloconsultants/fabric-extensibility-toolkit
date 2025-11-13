@@ -11,9 +11,9 @@ const { buildManifestPackage } = require('./build-manifest');
 const router = express.Router();
 
 /**
- * OPTIONS handler for CORS preflight requests
+ * OPTIONS handler for CORS preflight requests - metadata endpoint
  */
-router.options('/manifests_new*', (req, res) => {
+router.options('/manifests_new/metadata', (req, res) => {
   res.header({
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
@@ -21,7 +21,21 @@ router.options('/manifests_new*', (req, res) => {
     'Access-Control-Max-Age': '86400' // 24 hours
   });
   res.sendStatus(204); // No content needed for OPTIONS response
-  console.log("Handled CORS preflight request for manifest endpoint.");
+  console.log("Handled CORS preflight request for manifest metadata endpoint.");
+});
+
+/**
+ * OPTIONS handler for base manifests_new route
+ */
+router.options('/manifests_new', (req, res) => {
+  res.header({
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Max-Age': '86400' // 24 hours
+  });
+  res.sendStatus(204); // No content needed for OPTIONS response
+  console.log("Handled CORS preflight request for base manifest endpoint.");
 });
 
 /**
@@ -45,7 +59,7 @@ router.get('/manifests_new/metadata', (req, res) => {
   };
 
   res.end(JSON.stringify({ extension: devParameters }));
-  console.log("Delivered manifest metainformation successfully.");
+  console.log("Deliverd manifest metainformation successfully.");
 });
 
 /**
@@ -68,7 +82,7 @@ router.get('/manifests_new', async (req, res) => {
     });
 
     res.sendFile(filePath);
-    console.log("Delivered manifest package successfully.");
+    console.log("Deliverd manifest package successfully.");
   } catch (err) {
     console.error(`❌ Error: ${err.message}`);
     res.status(500).json({

@@ -10,7 +10,7 @@ import {
     Button,
 } from "@fluentui/react-components";
 import { Database16Regular } from "@fluentui/react-icons";
-import { RootState } from "./Store/Store";
+import { RootState } from "../ClientSDKPlaygroundStore/Store";
 import {
     initializeApiData,
     setDatahubDialogDescription,
@@ -18,7 +18,7 @@ import {
     setWorkspaceExplorerPresented,
     setMultiSelectionEnabled,
     setSelectedLinkedItem,
-} from "./Store/apiDataSlice";
+} from "../ClientSDKPlaygroundStore/apiDataSlice";
 import "../../styles.scss";
 import { TabContentProps } from "./ClientSDKPlaygroundModel";
 import { callDatahubOpen, callDatahubWizardOpen } from "../../controller/DataHubController";
@@ -26,12 +26,9 @@ import { callDatahubOpen, callDatahubWizardOpen } from "../../controller/DataHub
 export function ApiData(props: TabContentProps) {
     const { sampleWorkloadName, workloadClient } = props;
     const sampleItemType = sampleWorkloadName + "." + process.env.DEFAULT_ITEM_NAME;
-    /* * The sampleItemType is used to filter the items in the Data Hub.
-       * It is constructed using the workload name and the default item name from the environment variables.
-       * This allows the Data Hub to display only items that match this type, ensuring that the user interacts with relevant data.
-       */
     const dataHubMsgBoxTypes = ["Lakehouse", 
-        process.env.WORKLOAD_NAME + "." + process.env.DEFAULT_ITEM_NAME];
+        process.env.WORKLOAD_NAME + "." + process.env.DEFAULT_ITEM_NAME,
+        process.env.WORKLOAD_NAME + ".CalculatorSample"];
     const dispatch = useDispatch();
 
     const {

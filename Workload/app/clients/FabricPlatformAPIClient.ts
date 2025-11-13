@@ -10,7 +10,7 @@ import { LongRunningOperationsClient } from "./LongRunningOperationsClient";
 import { SparkLivyClient } from "./SparkLivyClient";
 import { SparkClient } from "./SparkClient";
 import { FabricPlatformClient } from "./FabricPlatformClient";
-import { OneLakeStorageClient } from "./OneLakeStorageClient";
+import { OneLakeClient } from "./OneLakeClient";
 import { ExternalDataSharesProviderClient } from "./ExternalDataSharesProviderClient";
 import { ExternalDataSharesRecipientClient } from "./ExternalDataSharesRecipientClient";
 import { TagsClient } from "./TagsClient";
@@ -31,7 +31,7 @@ export class FabricPlatformAPIClient {
   public readonly operations: LongRunningOperationsClient;
   public readonly sparkLivy: SparkLivyClient;
   public readonly spark: SparkClient;
-  public readonly oneLakeStorage: OneLakeStorageClient;
+  public readonly oneLake: OneLakeClient;
   public readonly externalDataShares: ExternalDataSharesProviderClient;
   public readonly externalDataSharesRecipient: ExternalDataSharesRecipientClient;
   public readonly tags: TagsClient;
@@ -48,7 +48,7 @@ export class FabricPlatformAPIClient {
     this.operations = new LongRunningOperationsClient(workloadClient);
     this.spark = new SparkClient(workloadClient);    
     this.sparkLivy = new SparkLivyClient(workloadClient);
-    this.oneLakeStorage = new OneLakeStorageClient(workloadClient);
+    this.oneLake = new OneLakeClient(workloadClient);
     this.externalDataShares = new ExternalDataSharesProviderClient(workloadClient);
     this.externalDataSharesRecipient = new ExternalDataSharesRecipientClient(workloadClient);
     this.tags = new TagsClient(workloadClient);
@@ -97,7 +97,7 @@ export class FabricPlatformAPIClient {
     client.operations.updateAuthenticationConfig(authConfig);
     client.sparkLivy.updateAuthenticationConfig(authConfig);
     client.spark.updateAuthenticationConfig(authConfig);
-    client.oneLakeStorage.updateAuthenticationConfig(authConfig);
+    client.oneLake.updateAuthenticationConfig(authConfig);
     client.externalDataShares.updateAuthenticationConfig(authConfig);
     client.externalDataSharesRecipient.updateAuthenticationConfig(authConfig);
     client.tags.updateAuthenticationConfig(authConfig);
@@ -130,7 +130,7 @@ export class FabricPlatformAPIClient {
     client.operations.updateAuthenticationConfig(authConfig);
     client.sparkLivy.updateAuthenticationConfig(authConfig);
     client.spark.updateAuthenticationConfig(authConfig);
-    client.oneLakeStorage.updateAuthenticationConfig(authConfig);
+    client.oneLake.updateAuthenticationConfig(authConfig);
     client.externalDataShares.updateAuthenticationConfig(authConfig);
     client.externalDataSharesRecipient.updateAuthenticationConfig(authConfig);
     client.tags.updateAuthenticationConfig(authConfig);
@@ -144,6 +144,7 @@ export class FabricPlatformAPIClient {
  * Usage Examples:
  * 
  * ```typescript
+
  * import { FabricPlatformAPIClient } from './controller';
  * import { WorkloadClientAPI } from '@ms-fabric/workload-client';
  * 
@@ -162,7 +163,6 @@ export class FabricPlatformAPIClient {
  * // Method 3: Custom Token Authentication
  * const fabricAPIWithCustomToken = FabricPlatformAPIClient.createWithCustomToken('your-access-token');
  * 
- * // Use individual clients (works the same regardless of authentication method)
  * const workspaces = await fabricAPI.workspaces.getAllWorkspaces();
  * const items = await fabricAPI.items.getAllItems(workspaceId);
  * const capacity = await fabricAPI.capacities.getCapacity(capacityId);
@@ -203,9 +203,31 @@ export class FabricPlatformAPIClient {
  * const batchResponse = await fabricAPI.sparkLivy.createBatch(workspaceId, lakehouseId, batchRequest);
  * const sessions = await fabricAPI.sparkLivy.listSessions(workspaceId, lakehouseId);
  * 
- * // Or use clients directly for more specific use cases
- * const sparkClient = new SparkClient(workloadClient);
- * const sparkLivyClient = new SparkLivyClient(workloadClient);
+ * // Or use controllers directly for more specific use cases
+ * import { WorkspaceController, SparkController, SparkLivyController, FabricPlatformClient } from './controller';
  * 
+ * // User token authentication (legacy)
+ * const workspaceClient = new WorkspaceClient(workloadClient);
+ * import { WorkspaceClient, SparkClient, SparkLivyClient, FabricPlatformClient } from './client';
+ * 
+ * // User token authentication (legacy)
+ * const workspaceClient = new WorkspaceClient(workloadClient);
+ * 
+ * // Service principal authentication
+ * const authConfig = FabricPlatformClient.createServicePrincipalAuth(
+ *   'client-id', 'client-secret', 'tenant-id'
+ * );
+ * const sparkController = new SparkController(authConfig);
+ * const sparkLivyController = new SparkLivyController(authConfig);
+ * 
+ * const workspace = await workspaceController.getWorkspace(workspaceId);
+ * const sparkSettings = await sparkController.getWorkspaceSparkSettings(workspaceId);
+ * const batch = await sparkLivyController.getBatch(workspaceId, lakehouseId, batchId);
+ * const sparkController = new SparkController(authConfig);
+ * const sparkLivyController = new SparkLivyController(authConfig);
+ * 
+ * const workspace = await workspaceController.getWorkspace(workspaceId);
+ * const sparkSettings = await sparkController.getWorkspaceSparkSettings(workspaceId);
+ * const batch = await sparkLivyController.getBatch(workspaceId, lakehouseId, batchId);
  * ```
  */

@@ -1,0 +1,44 @@
+meta {
+  name: 05 - Get Published Items From Table
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_url}}/published-items-from-table
+  body: none
+  auth: none
+}
+
+params:query {
+  itemTypes: theme
+  isPublic: true
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response is array of items", function() {
+    const body = res.getBody();
+    expect(Array.isArray(body)).to.be.true;
+  });
+  
+  test("Items have expected properties", function() {
+    const body = res.getBody();
+    if (body.length > 0) {
+      const item = body[0];
+      expect(item).to.have.property('id');
+      expect(item).to.have.property('itemType');
+      expect(item).to.have.property('title');
+      expect(item).to.have.property('publishedAt');
+      expect(item.itemType).to.equal('theme');
+    }
+  });
+}

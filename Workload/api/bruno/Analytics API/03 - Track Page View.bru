@@ -1,0 +1,46 @@
+meta {
+  name: Track Page View
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base_url}}/analytics/pageviews
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "page": "/gallery",
+    "title": "Theme Gallery",
+    "location": "https://powerbi.tips/gallery"
+  }
+}
+
+tests {
+  test("Status should be 200 or 400 (config missing)", function() {
+    const status = res.getStatus();
+    expect([200, 400]).to.include(status);
+  });
+
+  test("Response should contain success and message", function() {
+    const data = res.getBody();
+    expect(data).to.have.property('success');
+    expect(data).to.have.property('message');
+  });
+
+  test("Success should be boolean", function() {
+    const data = res.getBody();
+    expect(data.success).to.be.a('boolean');
+  });
+
+  test("Message should not be empty", function() {
+    const data = res.getBody();
+    expect(data.message).to.not.be.empty;
+  });
+}

@@ -1,0 +1,40 @@
+meta {
+  name: User OBO Exchange
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_url}}/api/auth/token/powerbi
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  { "token": "dummy-user-token" }
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response should contain exchanged token", function() {
+    const data = res.getBody();
+    expect(data).to.have.property('token');
+  });
+
+  test("Exchanged token should not be empty", function() {
+    const data = res.getBody();
+    expect(data.token).to.not.be.empty;
+  });
+
+  test("Exchanged token should be different from input", function() {
+    const data = res.getBody();
+    const inputToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik1UaEVOVUpHTkVNMVFURTRNMEU3UkRnNU1qTXpRalJzT0RjeE1scHZRVDA5In0.eyJodHRwczovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9hdXRoZW50aWNhdGlvbm1ldGhvZCI6InB3ZCIsInNjcCI6IkFjY2VzcyIsInVzZXJSb2xlIjoiVXNlciIsInVzZXJJZCI6Im5ldy11c2VyLTc4OSIsInVzZXJEZXRhaWxzIjoibmV3LXVzZXItNzg5IiwidGlkIjoiNzI0NDViYWEtMzE0Zi00YzkyLTkzNjQtMWNiMmM0OTI0YmY2In0.example";
+    expect(data.token).to.not.equal(inputToken);
+  });
+}

@@ -1,0 +1,67 @@
+meta {
+  name: Create User
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base_url}}/users
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik1UaEVOVUpHTkVNMVFURTRNMEU3UkRnNU1qTXpRalJzT0RjeE1scHZRVDA5In0.eyJodHRwczovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9hdXRoZW50aWNhdGlvbm1ldGhvZCI6InB3ZCIsInNjcCI6IkFjY2VzcyIsInVzZXJSb2xlIjoiVXNlciIsInVzZXJJZCI6Im5ldy11c2VyLTc4OSIsInVzZXJEZXRhaWxzIjoibmV3LXVzZXItNzg5In0.example
+}
+
+body:json {
+  {
+    "environment": "local",
+    "identityProvider": "github",
+    "idpUserName": "new-user-790",
+    "idpUserId": "789013",
+    "tenantId": "test-tenant",
+    "userName": "New Test User 2",
+    "firstName": "2-New",
+    "lastName": "User"
+  }
+}
+
+tests {
+  test("Status should be 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response should contain created user", function() {
+    expect(res.getBody()).to.have.property('userId');
+    expect(res.getBody()).to.have.property('userName');
+    expect(res.getBody().userName).to.equal('New Test User');
+  });
+  
+  test("User should have default role", function() {
+    expect(res.getBody()).to.have.property('userRole');
+    expect(res.getBody().userRole).to.equal('User');
+  });
+}
+
+docs {
+  # Create User
+  
+  Creates a new user in the system.
+  
+  ## Request Body
+  - `environment`: Environment name (e.g., "local", "prod")
+  - `identityProvider`: Identity provider (e.g., "github", "aad")
+  - `idpUserName`: Username from identity provider
+  - `idpUserId`: User ID from identity provider
+  - `tenantId`: Tenant identifier
+  - `userName`: Display name
+  - `firstName`: User's first name
+  - `lastName`: User's last name
+  
+  ## Response
+  - `201`: User created successfully
+  - `400`: Invalid request data
+  - `503`: Feature flag disabled
+}

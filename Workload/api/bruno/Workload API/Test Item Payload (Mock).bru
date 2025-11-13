@@ -1,0 +1,74 @@
+meta {
+  name: Test Item Payload (Mock)
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/api/workload/workspaces/test-workspace-123/items/Report/test-report-456/payload
+  body: none
+  auth: none
+}
+
+headers {
+  x-ms-client-principal: {"userId":"test-user","userRoles":["anonymous","authenticated"],"claims":[],"identityProvider":"staticwebapps","userDetails":"test@example.com"}
+  Content-Type: application/json
+}
+
+tests {
+  test("Status should be 200 for successful item payload retrieval", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be JSON", function() {
+    expect(res.getHeader('content-type')).to.contain('application/json');
+  });
+  
+  test("Response should have payload structure", function() {
+    const data = res.getBody();
+    expect(data).to.be.an('object');
+    expect(data).to.have.property('itemId');
+    expect(data).to.have.property('itemType');
+    expect(data).to.have.property('itemPayload');
+    expect(data).to.have.property('contentType');
+    expect(data).to.have.property('size');
+  });
+  
+  test("Item details should match request", function() {
+    const data = res.getBody();
+    expect(data.itemId).to.equal('test-report-456');
+    expect(data.itemType).to.equal('Report');
+  });
+  
+  test("Payload should be an object", function() {
+    const data = res.getBody();
+    expect(data.itemPayload).to.be.an('object');
+  });
+  
+  test("Content type should be application/json", function() {
+    const data = res.getBody();
+    expect(data.contentType).to.equal('application/json');
+  });
+}
+
+docs {
+  # Test Item Payload (Mock)
+  
+  This test retrieves payload data for a specific workload item using mock IDs.
+  
+  ## Path Parameters:
+  - workspaceId: test-workspace-123
+  - itemType: Report
+  - itemId: test-report-456
+  
+  ## Expected Response Structure:
+  ```json
+  {
+    "itemId": "test-report-456",
+    "itemType": "Report",
+    "itemPayload": {},
+    "contentType": "application/json",
+    "size": 0
+  }
+  ```
+}

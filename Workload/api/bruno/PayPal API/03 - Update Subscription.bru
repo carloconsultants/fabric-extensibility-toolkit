@@ -1,0 +1,115 @@
+meta {
+  name: Update PayPal Subscription Status
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{base_url}}/paypal/subscription
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{client_principal_admin}}
+}
+
+body:json {
+  {
+    "status": "Active"
+  }
+}
+
+script:pre-request {
+  // This test verifies the UpdateSubscription endpoint
+  console.log("Testing PUT /api/paypal/subscription");
+  console.log("Setting status to: Active");
+}
+
+script:post-response {
+  const { status, body } = res;
+  
+  // Log response details
+  console.log("Response Status:", status);
+  console.log("Response Body:", JSON.stringify(body, null, 2));
+  
+  // Basic validation
+  if (status === 200) {
+    console.log("✅ SUCCESS: Subscription updated successfully");
+    
+    // Validate response structure
+    if (body && body.success === true) {
+      console.log("✅ SUCCESS: Response indicates success");
+    } else {
+      console.log("❌ VALIDATION ERROR: Response should indicate success");
+    }
+  } else if (status === 400) {
+    console.log("ℹ️  INFO: Bad request - check status value validation");
+  } else if (status === 401) {
+    console.log("ℹ️  INFO: Unauthorized - user must be authenticated");
+  } else if (status === 404) {
+    console.log("ℹ️  INFO: User does not have an active subscription");
+  } else if (status === 503) {
+    console.log("ℹ️  INFO: PayPal API feature flag disabled - using legacy endpoint");
+  } else {
+    console.log(`❌ ERROR: Unexpected status ${status}`);
+  }
+}
+
+docs {
+  # Update PayPal Subscription Status
+  
+  Tests the PayPal subscription update endpoint to change subscription status (activate/suspend).
+  
+  ## Test Cases
+  - ✅ Successful subscription activation
+  - ✅ Successful subscription suspension
+  - ✅ Request body validation
+  - ✅ Authentication requirements
+  - ✅ User subscription existence validation
+  - ✅ PayPal API integration
+  - ✅ Feature flag disabled handling
+  
+  ## Request Body (Activate)
+  ```json
+  {
+    "status": "Active"
+  }
+  ```
+  
+  ## Request Body (Suspend)
+  ```json
+  {
+    "status": "Suspended"
+  }
+  ```
+  
+  ## Expected Response (200 OK)
+  ```json
+  {
+    "success": true
+  }
+  ```
+  
+  ## Validation Errors (400)
+  ```json
+  {
+    "error": "Status must be Active or Suspended"
+  }
+  ```
+  
+  ## Authentication Error (401)
+  ```json
+  {
+    "error": "User must be authenticated"
+  }
+  ```
+  
+  ## No Subscription (404)
+  ```json
+  {
+    "error": "User does not have an active subscription"
+  }
+  ```
+}

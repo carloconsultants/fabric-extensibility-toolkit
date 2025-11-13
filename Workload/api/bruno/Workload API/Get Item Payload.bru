@@ -1,0 +1,53 @@
+meta {
+  name: Get Item Payload
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{base_url}}/api/workload/workspaces/{{workspace_id}}/items/{{item_type}}/{{item_id}}/payload
+  auth: none
+}
+
+headers {
+  x-ms-client-principal: {{client_principal_header}}
+  Content-Type: application/json
+}
+
+params:path {
+  workspace_id: sample-workspace
+  item_type: Report
+  item_id: sample-item-id
+}
+
+tests {
+  test("Status should be 200 for successful item payload retrieval", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be JSON", function() {
+    expect(res.getHeader('content-type')).to.contain('application/json');
+  });
+  
+  test("Response should have payload data", function() {
+    const data = res.getBody();
+    expect(data).to.be.an('object');
+  });
+}
+
+docs {
+  # Get Item Payload
+  
+  This endpoint retrieves the payload for a specific workload item in a Microsoft Fabric workspace.
+  
+  ## Path Parameters
+  - `workspaceId`: The ID of the workspace
+  - `itemType`: The type of the item (e.g., Report, Dataset, etc.)
+  - `itemId`: The ID of the specific item
+  
+  ## Authentication
+  Requires valid user authentication via x-ms-client-principal header.
+  
+  ## Response
+  Returns the item payload data from the Microsoft Fabric API.
+}

@@ -1,0 +1,52 @@
+meta {
+  name: 01 - Publish Theme Item
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/publish-item
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+body:json {
+  {
+    "ItemName": "Beautiful Blue Theme",
+    "ItemId": "test-theme-123",
+    "PublishType": 0,
+    "UserThemeId": "test-theme-123",
+    "PreviewImage": "https://example.com/preview.png"
+  }
+}
+
+tests {
+  test("Status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has published item", function() {
+    const body = res.getBody();
+    
+    expect(body).to.have.property('publishedGuid');
+    expect(body).to.have.property('name');
+    expect(body.name).to.equal('Beautiful Blue Theme');
+    
+    // Save the publishedGuid for use in delete operations
+    bru.setVar('published_theme_guid', body.publishedGuid);
+    
+    console.log('Published item response:', JSON.stringify(body, null, 2));
+    console.log('Published GUID saved as:', body.publishedGuid);
+  });
+  
+  test("Response has timestamps", function() {
+    const body = res.getBody();
+    expect(body).to.have.property('publishedAt');
+    expect(body).to.have.property('updatedAt');
+  });
+}

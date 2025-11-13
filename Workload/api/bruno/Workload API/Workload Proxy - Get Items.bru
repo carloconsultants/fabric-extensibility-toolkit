@@ -1,0 +1,50 @@
+meta {
+  name: Workload Proxy - Get Items
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_url}}/api/workload/workspaces/{{workspace_id}}/items
+  body: none
+  auth: none
+}
+
+headers {
+  x-ms-client-principal: {{client_principal_header}}
+  Authorization: Bearer {{fabric_access_token}}
+  Content-Type: application/json
+}
+
+tests {
+  test("Status should be 200 for successful proxy request", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response should be JSON", function() {
+    expect(res.getHeader('content-type')).to.contain('application/json');
+  });
+  
+  test("Response should have items data", function() {
+    const data = res.getBody();
+    expect(data).to.be.an('object');
+  });
+}
+
+docs {
+  # Workload Proxy - Get Items
+  
+  This endpoint demonstrates the proxy functionality by retrieving items from a specific workspace via the Microsoft Fabric API.
+  
+  ## Path Parameters
+  - `workspaceId`: The ID of the workspace to get items from
+  
+  ## Headers
+  - `Authorization`: Bearer token for Fabric API access
+  
+  ## Authentication
+  Requires valid user authentication via x-ms-client-principal header.
+  
+  ## Response
+  Returns items data directly from the Microsoft Fabric API.
+}

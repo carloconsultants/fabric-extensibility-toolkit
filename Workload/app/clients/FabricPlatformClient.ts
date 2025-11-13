@@ -2,7 +2,7 @@ import { WorkloadClientAPI, AccessToken } from "@ms-fabric/workload-client";
 import { EnvironmentConstants } from "../constants";
 import { SCOPES, ScopePair, getScopeForMethod } from "./FabricPlatformScopes";
 import { FabricAuthenticationService } from "./FabricAuthenticationService";
-import { AsyncOperationIndicator, AuthenticationConfig, ErrorResponse } from "./FabricPlatformTypes";
+import { AuthenticationConfig, ErrorResponse } from "./FabricPlatformTypes";
 
 /**
  * Custom error class for Fabric Platform API errors
@@ -140,7 +140,6 @@ export abstract class FabricPlatformClient {
 
   /**
    * Make an authenticated HTTP request to the Fabric API
-   * Handles long-running operations (202 responses) by preserving operation details
    * @param url The endpoint URL (can be relative or absolute)
    * @param options RequestInit options
    * @returns Promise<T>
@@ -159,7 +158,7 @@ export abstract class FabricPlatformClient {
         headers: {
           'Authorization': `Bearer ${accessToken.token}`,
           'Content-Type': 'application/json',
-          'User-Agent': 'ms-fabric-extensibility-toolkit',
+          'User-Agent': 'ms-fabric-wdk',
           ...options.headers,
         },
       });
@@ -196,23 +195,6 @@ export abstract class FabricPlatformClient {
       // Handle empty responses (like 204 No Content)
       if (response.status === 204 || response.headers.get('content-length') === '0') {
         return undefined as unknown as T;
-      }
-
-      // Handle 202 Accepted responses (Long Running Operations)
-      // 202 indicates the request was accepted but processing is asynchronous
-      // The response body typically contains operation details (id, status, etc.)
-      if (response.status === 202) {
-        const result: AsyncOperationIndicator = {
-          // operationId is required - use header value or generate a fallback
-          operationId: response.headers.get('x-ms-operation-id') || `op-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-        };
-        
-        if (response.headers.get('Retry-After')) {
-          const retryAfterHeader = response.headers.get('Retry-After');
-          result.retryAfter = retryAfterHeader ? Number(retryAfterHeader) : undefined;
-        }
-        
-        return result as unknown as T;
       }
 
       const result = await response.json();

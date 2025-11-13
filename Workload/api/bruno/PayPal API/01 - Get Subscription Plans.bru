@@ -1,0 +1,91 @@
+meta {
+  name: Get PayPal Subscription Plans
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/paypal/subscription-plans
+  body: none
+  auth: none
+}
+
+headers {
+  x-ms-client-principal: {{client_principal_admin}}
+}
+
+script:pre-request {
+  // This test verifies the GetSubscriptionPlans endpoint
+  console.log("Testing GET /api/paypal/subscription-plans");
+}
+
+script:post-response {
+  const { status, body } = res;
+  
+  // Log response details
+  console.log("Response Status:", status);
+  console.log("Response Body:", JSON.stringify(body, null, 2));
+  
+  // Basic validation
+  if (status === 200) {
+    console.log("✅ SUCCESS: Subscription plans retrieved successfully");
+    
+    // Validate response structure
+    if (Array.isArray(body)) {
+      console.log(`✅ SUCCESS: Response is an array with ${body.length} plans`);
+      
+      if (body.length > 0) {
+        const plan = body[0];
+        const expectedFields = ['planId', 'name', 'description', 'intervalType', 'price', 'currencyCode'];
+        const missingFields = expectedFields.filter(field => !(field in plan));
+        
+        if (missingFields.length === 0) {
+          console.log("✅ SUCCESS: All required plan fields present");
+        } else {
+          console.log(`❌ VALIDATION ERROR: Missing fields: ${missingFields.join(', ')}`);
+        }
+      }
+    } else {
+      console.log("❌ VALIDATION ERROR: Response should be an array");
+    }
+  } else if (status === 503) {
+    console.log("ℹ️  INFO: PayPal API feature flag disabled - using legacy endpoint");
+  } else {
+    console.log(`❌ ERROR: Unexpected status ${status}`);
+  }
+}
+
+docs {
+  # Get PayPal Subscription Plans
+  
+  Tests the PayPal subscription plans endpoint to retrieve active subscription plans.
+  
+  ## Test Cases
+  - ✅ Successful retrieval of subscription plans
+  - ✅ Proper response format validation
+  - ✅ Required fields validation
+  - ✅ Feature flag disabled handling
+  
+  ## Expected Response (200 OK)
+  ```json
+  [
+    {
+      "planId": "plan_12345",
+      "name": "Monthly Subscription",
+      "description": "Monthly access to PowerBI Tips",
+      "intervalType": "Month",
+      "price": "9.99",
+      "currencyCode": "USD",
+      "taxesPercentage": "0",
+      "taxesInclusive": false
+    }
+  ]
+  ```
+  
+  ## Error Response (503)
+  ```json
+  {
+    "error": "Service temporarily unavailable"
+  }
+  ```
+}

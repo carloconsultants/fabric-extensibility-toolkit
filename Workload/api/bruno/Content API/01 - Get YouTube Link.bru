@@ -1,0 +1,33 @@
+meta {
+  name: Get YouTube Link
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/get-youtube-link
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status should be 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response should contain YouTube URL", function() {
+    const data = res.getBody();
+    expect(data).to.be.a('string');
+  });
+
+  test("YouTube URL should not be empty", function() {
+    const data = res.getBody();
+    expect(data).to.not.be.empty;
+  });
+
+  test("Response should be a valid YouTube URL format", function() {
+    const data = res.getBody();
+    // YouTube embed URLs typically contain 'youtube.com' or 'youtu.be'
+    expect(data.toLowerCase()).to.contain('youtube');
+  });
+}

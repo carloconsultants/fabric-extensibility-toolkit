@@ -21,7 +21,6 @@ export const FABRIC_BASE_SCOPES = {
   // OneLake operations
   ONELAKE_READ: "https://api.fabric.microsoft.com/OneLake.Read.All",
   ONELAKE_READWRITE: "https://api.fabric.microsoft.com/OneLake.ReadWrite.All",
-  
   ONELAKE_STORAGE: "https://storage.azure.com/user_impersonation",
 
   

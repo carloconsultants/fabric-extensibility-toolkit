@@ -1,0 +1,39 @@
+meta {
+  name: Get User by ID (Not Found)
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/users/{{non_existent_user_id}}
+  body: none
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  x-ms-client-principal: {{auth_header}}
+}
+
+tests {
+  test("Status should be 404", function() {
+    expect(res.getStatus()).to.equal(404);
+  });
+
+  test("Should return 'User not found' message", function() {
+    expect(res.getBody()).to.contain('User not found');
+  });
+}
+
+docs {
+  # Get User by ID (Not Found)
+
+  Tests the behavior when requesting a user that doesn't exist.
+
+  ## Parameters
+  - `non_existent_user_id`: A user ID that doesn't exist in the system
+
+  ## Response
+  - `404`: User not found with error message
+  - `503`: Feature flag disabled
+}
