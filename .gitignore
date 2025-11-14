@@ -417,19 +417,19 @@ scripts/Build/Manifest/ValidationScripts/ValidationErrors.txt
 scripts/Setup/My*
 
 # Fabric Workload files
-Workload/app/node_modules/
-Workload/app/package-lock.json
-Workload/app/npm-debug.log*
-Workload/app/yarn-debug.log*
-Workload/app/yarn-error.log*
+Workload/node_modules/
+Workload/package-lock.json
+Workload/npm-debug.log*
+Workload/yarn-debug.log*
+Workload/yarn-error.log*
 Workload/dist/
 Workload/build/
 
 # Fabric environment files (keep .env.template for developers)
-Workload/app/.env.dev
-Workload/app/.env.test
-Workload/app/.env.prod
-Workload/api/local.settings.json
+Workload/.env.dev
+Workload/.env.test
+Workload/.env.prod
+api/local.settings.json
 Workload/swa-cli.config.json
 
 # Azure Functions

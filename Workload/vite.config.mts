@@ -14,9 +14,9 @@ dotenv.config();
 const DEV_HOST = '127.0.0.1';
 const DEV_PORT = 60006;
 
-// Root is now the current directory (app/) since we run from here
+// Root is now the current directory (Workload/) since we run from here
 const appRoot = __dirname;
-const outDir = path.resolve(__dirname, '../build/Frontend');
+const outDir = path.resolve(__dirname, 'build/Frontend');
 
 export default defineConfig({
   root: appRoot,

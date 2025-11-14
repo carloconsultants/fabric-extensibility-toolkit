@@ -41,7 +41,7 @@
       "command": "func",
       "args": ["start"],
       "options": {
-        "cwd": "${workspaceFolder}/Workload/api"
+        "cwd": "${workspaceFolder}/api"
       },
       "group": "build",
       "presentation": {
@@ -76,7 +76,7 @@
       "command": "dotnet",
       "args": ["build"],
       "options": {
-        "cwd": "${workspaceFolder}/Workload/api"
+        "cwd": "${workspaceFolder}/api"
       },
       "group": "build",
       "presentation": {

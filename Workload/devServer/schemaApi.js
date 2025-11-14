@@ -32,6 +32,8 @@ async function getWorkloadNameFromEnv() {
     return defaultName;
 }
 
+// Temporarily commenting out wildcard routes that cause issues with Vite dev server
+/*
 router.options('/schemas/*', (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -41,8 +43,9 @@ router.options('/schemas/*', (req, res) => {
 
 router.get('/schemas/*', async (req, res) => {
     try {
-        // Extract the path after /schemas/
-        const schemaPath = req.params[0];
+        // Extract the path after /schemas/ from the URL
+        const fullPath = req.originalUrl || req.url;
+        const schemaPath = fullPath.replace('/schemas/', '');
         console.log(`[Schema Server] Received request for schema path: ${schemaPath}`);
         
         if (!schemaPath) {
@@ -138,5 +141,6 @@ router.get('/schemas/*', async (req, res) => {
         }
     }
 });
+*/
 
 module.exports = router;
