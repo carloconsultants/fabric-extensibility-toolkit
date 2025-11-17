@@ -3,9 +3,16 @@
   "version": "1.0.0",
   "description": "PBI.tips Workload Template - Microsoft Fabric workload development template",
   "scripts": {
-    "start": "npm run start:vite",
+    "start": "concurrently \"npm run start:vite\" \"npm run start:api\" \"npm run start:proxy\" --names \"frontend,api,proxy\" --prefix-colors \"cyan,yellow,magenta\"",
     "start:vite": "env-cmd -f .env.dev vite --config ./vite.config.mts",
-    "start:devGateway": "node ./devServer/start-devGateway.js",
+    
+    "start:api": "cd ../api && func start",
+    "start:api:build": "cd ../api && dotnet build && func start",
+    "start:proxy": "swa start . --api-devserver-url http://localhost:7071 --app-devserver-url http://localhost:60006",
+    "start:gateway": "pwsh ../scripts/Run/StartDevGateway.ps1",
+    "build:manifest:local": "pwsh ../scripts/Build/BuildManifestPackage.ps1 -Environment dev",
+    "build:manifest:dev": "pwsh ../scripts/Build/BuildManifestPackage.ps1 -Environment dev",
+    "build:manifest:prod": "pwsh ../scripts/Build/BuildManifestPackage.ps1 -Environment prod",
     "build:test": "env-cmd -f .env.test vite build --config ./vite.config.mts",
     "build:prod": "env-cmd -f .env.prod vite build --config ./vite.config.mts"
   },
@@ -47,6 +54,7 @@
     "@types/react-router-dom": "^5.3.2",
     "@vitejs/plugin-react": "^4.7.0",
     "ajv": "^8.12.0",
+    "concurrently": "^9.0.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "env-cmd": "^10.1.0",

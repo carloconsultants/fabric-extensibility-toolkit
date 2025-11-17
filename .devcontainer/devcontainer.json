@@ -60,7 +60,7 @@
     }
   },
   "forwardPorts": [3000, 60006, 7071],
-  "postCreateCommand": ".devcontainer/setup-dev-environment.sh",
+  "postCreateCommand": ".devcontainer/setup-dev-environment.sh && npm install -g azure-functions-core-tools@4 --unsafe-perm true",
   "containerEnv": {
     "AZURE_CLIENT_ID": "${localEnv:AZURE_CLIENT_ID}",
     "AZURE_CLIENT_SECRET": "${localEnv:AZURE_CLIENT_SECRET}",
