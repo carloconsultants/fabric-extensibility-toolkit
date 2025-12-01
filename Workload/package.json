@@ -4,13 +4,14 @@
   "description": "PBI.tips Workload Template - Microsoft Fabric workload development template",
   "scripts": {
     "start": "concurrently \"npm run start:vite\" \"npm run start:api\" \"npm run start:proxy\" --names \"frontend,api,proxy\" --prefix-colors \"cyan,yellow,magenta\"",
-    "start:vite": "env-cmd -f .env.dev vite --config ./vite.config.mts",
+    "start:vite": "env-cmd -f .env.local vite --config ./vite.config.mts",
     
     "start:api": "cd ../api && func start",
     "start:api:build": "cd ../api && dotnet build && func start",
     "start:proxy": "swa start . --api-devserver-url http://localhost:7071 --app-devserver-url http://localhost:60006",
-    "start:gateway": "pwsh ../scripts/Run/StartDevGateway.ps1",
-    "build:manifest:local": "pwsh ../scripts/Build/BuildManifestPackage.ps1 -Environment dev",
+    "start:gateway": "pwsh ../scripts/Run/StartDevGateway.ps1 -Environment local",
+    "start:gateway:dev": "pwsh ../scripts/Run/StartDevGateway.ps1 -Environment dev",
+    "build:manifest:local": "pwsh ../scripts/Build/BuildManifestPackage.ps1 -Environment local",
     "build:manifest:dev": "pwsh ../scripts/Build/BuildManifestPackage.ps1 -Environment dev",
     "build:manifest:prod": "pwsh ../scripts/Build/BuildManifestPackage.ps1 -Environment prod",
     "build:test": "env-cmd -f .env.test vite build --config ./vite.config.mts",

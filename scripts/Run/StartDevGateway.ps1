@@ -1,5 +1,6 @@
 param (
-    [boolean]$InteractiveLogin = $true
+    [boolean]$InteractiveLogin = $false,
+    [string]$Environment = "local"
 )
 
 ################################################
@@ -9,7 +10,7 @@ param (
 $buildManifestPackageScript = Join-Path $PSScriptRoot "..\Build\BuildManifestPackage.ps1"
 if (Test-Path $buildManifestPackageScript) {
     $buildManifestPackageScript = (Resolve-Path $buildManifestPackageScript).Path
-    & $buildManifestPackageScript 
+    & $buildManifestPackageScript -Environment $Environment
 } else {
     Write-Host "BuildManifestPackage.ps1 not found at $buildManifestPackageScript"
     exit 1
@@ -57,15 +58,22 @@ if($IsWindows) {
 } else {   
     # Check if we're on ARM64 Mac and need x64 runtime
     $arch = uname -m
-    if ($arch -eq "arm64") {
+    if ($arch -eq "arm64" -or $arch -eq "aarch64") {
+        # Try macOS x64 path first
         $x64DotnetPath = "/usr/local/share/dotnet/x64/dotnet"
+        # Try Linux system path (Debian/Ubuntu)
+        if (-not (Test-Path $x64DotnetPath)) {
+            $x64DotnetPath = "/usr/bin/dotnet"
+        }
+        
         if (Test-Path $x64DotnetPath) {
-            Write-Host "Using x64 .NET runtime for ARM64 Mac compatibility..." -ForegroundColor Yellow
+            Write-Host "Using x64 .NET runtime for ARM64 compatibility..." -ForegroundColor Yellow
             & $x64DotnetPath $fileExe -LogLevel $logLevel -DevMode:UserAuthorizationToken $token -DevMode:ManifestPackageFilePath $manifestPackageFilePath -DevMode:WorkspaceGuid $devWorkspaceId -DevMode:WorkloadEndpointUrl $workloadEndpointURL
         } else {
-            Write-Host "ERROR: This application requires x64 .NET runtime, but you're on ARM64 Mac." -ForegroundColor Red
-            Write-Host "Please install x64 .NET 8 Runtime from: https://dotnet.microsoft.com/download/dotnet/8.0" -ForegroundColor Red
-            Write-Host "Make sure to download the x64 version (not ARM64)." -ForegroundColor Red
+            Write-Host "ERROR: This application requires x64 .NET runtime, but you're on ARM64." -ForegroundColor Red
+            Write-Host "Please install x64 .NET 8 Runtime." -ForegroundColor Red
+            Write-Host "On Linux: sudo apt-get install dotnet-runtime-8.0" -ForegroundColor Red
+            Write-Host "On Mac: Download x64 version from https://dotnet.microsoft.com/download/dotnet/8.0" -ForegroundColor Red
             exit 1
         }
     } else {

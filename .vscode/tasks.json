@@ -5,7 +5,10 @@
       "label": "Start Frontend (Vite)",
       "type": "shell",
       "command": "npm",
-      "args": ["run", "start"],
+      "args": [
+        "run",
+        "start"
+      ],
       "options": {
         "cwd": "${workspaceFolder}/Workload"
       },
@@ -39,14 +42,16 @@
       "label": "Start Backend (.NET Functions)",
       "type": "shell",
       "command": "func",
-      "args": ["start"],
+      "args": [
+        "start"
+      ],
       "options": {
         "cwd": "${workspaceFolder}/api"
       },
       "group": "build",
       "presentation": {
         "echo": true,
-        "reveal": "always", 
+        "reveal": "always",
         "focus": false,
         "panel": "dedicated"
       },
@@ -74,7 +79,9 @@
       "label": "Build Functions",
       "type": "shell",
       "command": "dotnet",
-      "args": ["build"],
+      "args": [
+        "build"
+      ],
       "options": {
         "cwd": "${workspaceFolder}/api"
       },
@@ -90,7 +97,11 @@
       "label": "Start Azure SWA (Full Stack)",
       "type": "shell",
       "command": "swa",
-      "args": ["start", "--config", "pbitips-workload"],
+      "args": [
+        "start",
+        "--config",
+        "pbitips-workload"
+      ],
       "options": {
         "cwd": "${workspaceFolder}/Workload"
       },
@@ -133,6 +144,82 @@
         "reveal": "always",
         "focus": true
       }
+    },
+    {
+      "label": "clean (functions)",
+      "command": "dotnet",
+      "args": [
+        "clean",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "type": "process",
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}/api"
+      }
+    },
+    {
+      "label": "build (functions)",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "type": "process",
+      "dependsOn": "clean (functions)",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}/api"
+      }
+    },
+    {
+      "label": "clean release (functions)",
+      "command": "dotnet",
+      "args": [
+        "clean",
+        "--configuration",
+        "Release",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "type": "process",
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}/api"
+      }
+    },
+    {
+      "label": "publish (functions)",
+      "command": "dotnet",
+      "args": [
+        "publish",
+        "--configuration",
+        "Release",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "type": "process",
+      "dependsOn": "clean release (functions)",
+      "problemMatcher": "$msCompile",
+      "options": {
+        "cwd": "${workspaceFolder}/api"
+      }
+    },
+    {
+      "type": "func",
+      "dependsOn": "build (functions)",
+      "options": {
+        "cwd": "${workspaceFolder}/api/bin/Debug/net8.0"
+      },
+      "command": "host start",
+      "isBackground": true,
+      "problemMatcher": "$func-dotnet-watch"
     }
   ]
 }

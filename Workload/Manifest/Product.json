@@ -2,6 +2,7 @@
     "name": "Product",
     "version": "1.100",
     "displayName": "Workload_Display_Name",
+    "displayNamePlural": "Workload_Display_Names",
     "fullDisplayName": "Workload_Full_Display_Name",
     "description": "Workload_Description",
     "favicon": "assets/images/HelloFabricWorkloadIcon.png",
@@ -44,6 +45,9 @@
       "cards": [
         {
           "title": "HelloWorldItem_DisplayName",
+          "name": "HelloWorldItem",
+          "displayName": "HelloWorldItem_DisplayName",
+          "displayNamePlural": "HelloWorldItem_DisplayName_Plural",
           "description": "HelloWorldItem_Description",
           "icon": {
             "name": "assets/images/HelloWorldItem-icon.png"
