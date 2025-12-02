@@ -4,7 +4,16 @@ import { Layout } from '../lib/cs-ui-library/src/components/Layout';
 import { NavSection } from '../lib/cs-ui-library/src/components/NavDrawer';
 import { ToolbarTab } from '../lib/cs-ui-library/src/components/AppToolbar';
 import { Button, Title2, Body1, Card } from '@fluentui/react-components';
-import { Home24Regular, Settings24Regular, Info24Regular } from '@fluentui/react-icons';
+import { 
+  Home24Regular, 
+  Settings24Regular, 
+  Info24Regular,
+  Add24Regular,
+  Delete24Regular,
+  Edit24Regular,
+  Save24Regular,
+  Share24Regular
+} from '@fluentui/react-icons';
 
 export const Route = createFileRoute('/')({
   component: LandingPage,
@@ -13,28 +22,27 @@ export const Route = createFileRoute('/')({
 function LandingPage() {
   const { workloadClient } = Route.useRouteContext();
   const [selectedNav, setSelectedNav] = useState('home');
-  const [selectedTab, setSelectedTab] = useState('overview');
 
   const navSections: NavSection[] = [
     {
       items: [
         {
           value: 'home',
-          label: 'Home',
-          icon: <Home24Regular />,
-          onClick: () => setSelectedNav('home'),
+          title: 'Home',
+          icon: Home24Regular,
+          navigate: () => setSelectedNav('home'),
         },
         {
           value: 'about',
-          label: 'About',
-          icon: <Info24Regular />,
-          onClick: () => setSelectedNav('about'),
+          title: 'About',
+          icon: Info24Regular,
+          navigate: () => setSelectedNav('about'),
         },
         {
           value: 'settings',
-          label: 'Settings',
-          icon: <Settings24Regular />,
-          onClick: () => setSelectedNav('settings'),
+          title: 'Settings',
+          icon: Settings24Regular,
+          navigate: () => setSelectedNav('settings'),
         },
       ],
     },
@@ -42,53 +50,78 @@ function LandingPage() {
 
   const toolbarTabs: ToolbarTab[] = [
     {
-      value: 'overview',
-      label: 'Overview',
-      onClick: () => setSelectedTab('overview'),
+      title: 'Overview',
+      leftItems: [
+        {
+          icon: <Add24Regular />,
+          label: 'New',
+          onClick: () => alert('Create new item'),
+          appearance: 'subtle',
+        },
+        {
+          icon: <Edit24Regular />,
+          label: 'Edit',
+          onClick: () => alert('Edit item'),
+        },
+        {
+          icon: <Delete24Regular />,
+          label: 'Delete',
+          onClick: () => alert('Delete item'),
+          divider: true,
+        },
+        {
+          icon: <Save24Regular />,
+          onClick: () => alert('Save changes'),
+        },
+        {
+          icon: <Share24Regular />,
+          label: 'Share',
+          onClick: () => alert('Share content'),
+        },
+      ],
     },
     {
-      value: 'details',
-      label: 'Details',
-      onClick: () => setSelectedTab('details'),
+      title: 'Details',
+      leftItems: [
+        {
+          icon: <Save24Regular />,
+          onClick: () => alert('Save details'),
+        },
+        {
+          icon: <Edit24Regular />,
+          label: 'Edit Details',
+          onClick: () => alert('Edit details'),
+          appearance: 'subtle',
+        },
+      ],
     },
   ];
 
   const renderContent = () => {
     if (selectedNav === 'home') {
-      if (selectedTab === 'overview') {
-        return (
-          <div style={{ padding: '24px' }}>
-            <Title2>Welcome to Your Landing Page</Title2>
-            <Body1 style={{ marginTop: '16px' }}>
-              This is a simple landing page built using the cs-ui-library Layout component
-              with TanStack Router for file-based routing.
-            </Body1>
-            <div style={{ marginTop: '24px', display: 'flex', gap: '16px' }}>
-              <Card style={{ padding: '16px', flex: 1 }}>
-                <Title2 style={{ fontSize: '18px' }}>Getting Started</Title2>
-                <Body1 style={{ marginTop: '8px' }}>
-                  Explore the navigation on the left to discover different sections.
-                </Body1>
-              </Card>
-              <Card style={{ padding: '16px', flex: 1 }}>
-                <Title2 style={{ fontSize: '18px' }}>Features</Title2>
-                <Body1 style={{ marginTop: '8px' }}>
-                  Use the tabs above to switch between different views of your content.
-                </Body1>
-              </Card>
-            </div>
+      return (
+        <div style={{ padding: '24px' }}>
+          <Title2>Welcome to Your Landing Page</Title2>
+          <Body1 style={{ marginTop: '16px' }}>
+            This is a simple landing page built using the cs-ui-library Layout component
+            with TanStack Router for file-based routing.
+          </Body1>
+          <div style={{ marginTop: '24px', display: 'flex', gap: '16px' }}>
+            <Card style={{ padding: '16px', flex: 1 }}>
+              <Title2 style={{ fontSize: '18px' }}>Getting Started</Title2>
+              <Body1 style={{ marginTop: '8px' }}>
+                Explore the navigation on the left to discover different sections.
+              </Body1>
+            </Card>
+            <Card style={{ padding: '16px', flex: 1 }}>
+              <Title2 style={{ fontSize: '18px' }}>Features</Title2>
+              <Body1 style={{ marginTop: '8px' }}>
+                Use the tabs above to switch between different views of your content.
+              </Body1>
+            </Card>
           </div>
-        );
-      } else if (selectedTab === 'details') {
-        return (
-          <div style={{ padding: '24px' }}>
-            <Title2>Home Details</Title2>
-            <Body1 style={{ marginTop: '16px' }}>
-              This is the details view for the home section.
-            </Body1>
-          </div>
-        );
-      }
+        </div>
+      );
     } else if (selectedNav === 'about') {
       return (
         <div style={{ padding: '24px' }}>
