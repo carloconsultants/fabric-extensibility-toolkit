@@ -433,6 +433,10 @@ Workload/.env.prod
 api/local.settings.json
 Workload/swa-cli.config.json
 
+# NPM configuration files with authentication tokens
+.npmrc
+**/.npmrc
+
 # Azure Functions
 api/bin/
 api/obj/

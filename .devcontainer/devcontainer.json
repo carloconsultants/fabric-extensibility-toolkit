@@ -38,7 +38,8 @@
         "ms-azuretools.vscode-azurefunctions",
         "ms-azuretools.vscode-azurestaticwebapps",
         "bradlc.vscode-tailwindcss",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "mhutchie.git-graph"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
