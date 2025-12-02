@@ -56,27 +56,6 @@ $logLevel = "Information"
 if($IsWindows) { 
     & $fileExe -DevMode:LocalConfigFilePath $CONFIGURATIONFILE
 } else {   
-    # Check if we're on ARM64 Mac and need x64 runtime
-    $arch = uname -m
-    if ($arch -eq "arm64" -or $arch -eq "aarch64") {
-        # Try macOS x64 path first
-        $x64DotnetPath = "/usr/local/share/dotnet/x64/dotnet"
-        # Try Linux system path (Debian/Ubuntu)
-        if (-not (Test-Path $x64DotnetPath)) {
-            $x64DotnetPath = "/usr/bin/dotnet"
-        }
-        
-        if (Test-Path $x64DotnetPath) {
-            Write-Host "Using x64 .NET runtime for ARM64 compatibility..." -ForegroundColor Yellow
-            & $x64DotnetPath $fileExe -LogLevel $logLevel -DevMode:UserAuthorizationToken $token -DevMode:ManifestPackageFilePath $manifestPackageFilePath -DevMode:WorkspaceGuid $devWorkspaceId -DevMode:WorkloadEndpointUrl $workloadEndpointURL
-        } else {
-            Write-Host "ERROR: This application requires x64 .NET runtime, but you're on ARM64." -ForegroundColor Red
-            Write-Host "Please install x64 .NET 8 Runtime." -ForegroundColor Red
-            Write-Host "On Linux: sudo apt-get install dotnet-runtime-8.0" -ForegroundColor Red
-            Write-Host "On Mac: Download x64 version from https://dotnet.microsoft.com/download/dotnet/8.0" -ForegroundColor Red
-            exit 1
-        }
-    } else {
-        & dotnet $fileExe -LogLevel $logLevel -DevMode:UserAuthorizationToken $token -DevMode:ManifestPackageFilePath $manifestPackageFilePath -DevMode:WorkspaceGuid $devWorkspaceId -DevMode:WorkloadEndpointUrl $workloadEndpointURL
-    }
+    # On Linux/Mac, use dotnet to run the DLL
+    & dotnet $fileExe -LogLevel $logLevel -DevMode:UserAuthorizationToken $token -DevMode:ManifestPackageFilePath $manifestPackageFilePath -DevMode:WorkspaceGuid $devWorkspaceId -DevMode:WorkloadEndpointUrl $workloadEndpointURL
 }

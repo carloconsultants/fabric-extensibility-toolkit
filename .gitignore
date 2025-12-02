@@ -424,6 +424,7 @@ Workload/yarn-debug.log*
 Workload/yarn-error.log*
 Workload/dist/
 Workload/build/
+Workload/routeTree.gen.ts
 
 # Fabric environment files (keep .env.template for developers)
 Workload/.env.dev

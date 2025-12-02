@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { TanStackRouterVite } from '@tanstack/router-vite-plugin';
 import path from 'path';
 // Note: avoid importing CommonJS modules directly in the config. Use createRequire.
 import { createRequire } from 'node:module';
@@ -10,9 +11,9 @@ import dotenv from 'dotenv';
 // Load env from .env.* when running via `env-cmd -f .env.dev vite` or similar.
 dotenv.config();
 
-// Keep the same port/host Fabric DevGateway expects
+// Frontend runs on 60000, SWA proxy serves on 60006 to DevGateway
 const DEV_HOST = '127.0.0.1';
-const DEV_PORT = 60006;
+const DEV_PORT = 60000;
 
 // Root is now the current directory (Workload/) since we run from here
 const appRoot = __dirname;
@@ -21,6 +22,11 @@ const outDir = path.resolve(__dirname, 'build/Frontend');
 export default defineConfig({
   root: appRoot,
   plugins: [
+    TanStackRouterVite({
+      routesDirectory: path.resolve(appRoot, 'routes'),
+      generatedRouteTree: path.resolve(appRoot, 'routeTree.gen.ts'),
+      autoCodeSplitting: true,
+    }),
     react(),
     tsconfigPaths(),
     // Copy static files not handled by bundling (e.g., web.config) on build

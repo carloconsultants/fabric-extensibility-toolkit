@@ -1,0 +1,17 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "AZURE_CLIENT_ID": "your-aad-app-id-here",
+    "AZURE_CLIENT_SECRET": "your-aad-app-secret-here",
+    "AZURE_TENANT_ID": "your-tenant-id-here",
+    "FABRIC_CAPACITY_ID": "your-capacity-id-here",
+    "WORKLOAD_NAME": "YourOrg.YourWorkload"
+  },
+  "Host": {
+    "LocalHttpPort": 7071,
+    "CORS": "*",
+    "CORSCredentials": false
+  }
+}

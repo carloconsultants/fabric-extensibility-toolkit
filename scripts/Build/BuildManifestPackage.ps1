@@ -137,15 +137,18 @@ if($ValidateFiles -eq $true) {
 ################################################
 # Build the current nuget package
 ################################################
-$nugetPath = Join-Path $PSScriptRoot "..\..\Workload\node_modules\nuget-bin\nuget.exe"
+# The nuget-bin package uses nuget.exe which requires mono on Linux
+# But provides cross-platform support through the Node.js wrapper
+$nugetBinPath = Join-Path $PSScriptRoot "..\..\Workload\node_modules\.bin\nuget"
+$nugetExePath = Join-Path $PSScriptRoot "..\..\Workload\node_modules\nuget-bin\nuget.exe"
 $nuspecPath = Join-Path $tempPath "\ManifestPackage.nuspec"
 
 
 
 Write-Host "Using configuration in $outputDir"
 
-if (-not (Test-Path $nugetPath)) {
-    Write-Host "Nuget executable not found at $nugetPath will run npm install to get it."
+if (-not (Test-Path $nugetExePath)) {
+    Write-Host "Nuget executable not found at $nugetExePath will run npm install to get it."
     $workloadDir = Join-Path $PSScriptRoot "..\..\Workload"
     try {
         Push-Location $workloadDir
@@ -155,14 +158,31 @@ if (-not (Test-Path $nugetPath)) {
     }
 }
 
+# On Windows, use nuget.exe directly; on Linux/Mac use mono with nuget.exe
 if($IsWindows){
-    & $nugetPath pack $nuspecPath -OutputDirectory $outputDir -Verbosity detailed
+    & $nugetExePath pack $nuspecPath -OutputDirectory $outputDir -Verbosity detailed
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "❌ NuGet pack failed with exit code $LASTEXITCODE" -ForegroundColor Red
+        exit 1
+    }
 } else {
-    # On Mac and Linux, we need to use mono to run the script
-    # alternatively, we could use dotnet tool if available
-    # nuget pack $nuspecFile -OutputDirectory $outputDir -Verbosity detailed 2>&1   
-    mono $nugetPath pack $nuspecPath -OutputDirectory $outputDir -Verbosity detailed
+    # On Linux/Mac, use mono to run nuget.exe
+    # Note: Mono 6.8 has a known crash bug after successful packaging
+    # We verify success by checking if the .nupkg file was created
+    Write-Host "Using mono to run NuGet.exe..." -ForegroundColor Yellow
+    
+    $monoOutput = & mono $nugetExePath pack $nuspecPath -OutputDirectory $outputDir -Verbosity quiet 2>&1
+    
+    # Check if package was created (Mono crashes after success, so exit code is unreliable)
+    $packageFiles = Get-ChildItem -Path $outputDir -Filter "*.nupkg" -ErrorAction SilentlyContinue
+    if ($packageFiles) {
+        Write-Host "✅ NuGet package created successfully" -ForegroundColor Green
+    } else {
+        Write-Host "❌ NuGet package creation failed" -ForegroundColor Red
+        Write-Host $monoOutput
+        exit 1
+    }
 }
 
-Write-Host “✅ Created the new ManifestPackage in $outputDir." -ForegroundColor Blue
+Write-Host "✅ Created the new ManifestPackage in $outputDir." -ForegroundColor Blue
 

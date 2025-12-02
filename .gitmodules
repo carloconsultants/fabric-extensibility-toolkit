@@ -1,0 +1,3 @@
+[submodule "Workload/lib/cs-ui-library"]
+	path = Workload/lib/cs-ui-library
+	url = https://github.com/carloconsultants/cs-ui-library.git

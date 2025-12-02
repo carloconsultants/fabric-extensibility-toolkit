@@ -1,4 +1,3 @@
-import { createBrowserHistory } from "history";
 import React from "react";
 import { createRoot } from 'react-dom/client';
 
@@ -14,14 +13,7 @@ export async function initialize(params: InitParams) {
     
     const workloadClient = createWorkloadClient();
     console.log('✅ WorkloadClient created successfully');
-
-    const history = createBrowserHistory();
-    console.log('✅ Browser history created successfully');
     
-    workloadClient.navigation.onNavigate((route) => {
-        console.log('🧭 Navigation event:', route);
-        history.replace(route.targetUrl);
-    });
     workloadClient.action.onAction(async function ({ action, data }) {
         const { id } = data as ItemTabActionContext;
         switch (action) {
@@ -68,7 +60,7 @@ export async function initialize(params: InitParams) {
         console.log('🎨 Rendering App component...');
         root.render(
             <FluentProvider theme={fabricLightTheme}>
-                <App history={history} workloadClient={workloadClient} />
+                <App workloadClient={workloadClient} />
             </FluentProvider>
         );
         console.log('✅ App component rendered successfully');

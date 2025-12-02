@@ -1,14 +1,14 @@
 {
-  "name": "pbitips-workload-template",
-  "version": "1.0.0",
-  "description": "PBI.tips Workload Template - Microsoft Fabric workload development template",
+  "name": "fabric-developer-sample",
+  "version": "2.0.0",
+  "description": "Microsoft Fabric - Developer Sample App",
   "scripts": {
     "start": "concurrently \"npm run start:vite\" \"npm run start:api\" \"npm run start:proxy\" --names \"frontend,api,proxy\" --prefix-colors \"cyan,yellow,magenta\"",
     "start:vite": "env-cmd -f .env.local vite --config ./vite.config.mts",
     
     "start:api": "cd ../api && func start",
     "start:api:build": "cd ../api && dotnet build && func start",
-    "start:proxy": "swa start . --api-devserver-url http://localhost:7071 --app-devserver-url http://localhost:60006",
+    "start:proxy": "swa start . --api-devserver-url http://localhost:7071 --app-devserver-url http://localhost:60000 --port 60006",
     "start:gateway": "pwsh ../scripts/Run/StartDevGateway.ps1 -Environment local",
     "start:gateway:dev": "pwsh ../scripts/Run/StartDevGateway.ps1 -Environment dev",
     "build:manifest:local": "pwsh ../scripts/Build/BuildManifestPackage.ps1 -Environment local",
@@ -17,18 +17,8 @@
     "build:test": "env-cmd -f .env.test vite build --config ./vite.config.mts",
     "build:prod": "env-cmd -f .env.prod vite build --config ./vite.config.mts"
   },
-  "keywords": [
-    "microsoft-fabric",
-    "workload",
-    "powerbi",
-    "pbitips",
-    "template",
-    "vite",
-    "react",
-    "typescript"
-  ],
-  "author": "PBI.tips",
-  "license": "MIT",
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "@carloconsultants/cs-ui-library": "^0.0.67",
     "@fluentui/react": "^8.110.7",
@@ -36,7 +26,9 @@
     "@fluentui/react-icons": "^2.0.297",
     "@ms-fabric/workload-client": "^3.0.0",
     "@reduxjs/toolkit": "^2.6.0",
-    
+    "@tanstack/react-router": "^1.139.12",
+    "@tanstack/router-devtools": "^1.139.12",
+    "@tanstack/router-vite-plugin": "^1.139.12",
     "history": "^4.9.0",
     "i18next": "^25.4.1",
     "i18next-http-backend": "^2.4.2",

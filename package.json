@@ -1,0 +1,22 @@
+{
+  "name": "fabric-extensibility-toolkit",
+  "version": "1.0.0",
+  "description": "PBI.tips Fabric Extensibility Toolkit - Workload Template",
+  "private": true,
+  "scripts": {
+    "start": "cd Workload && npm start",
+    "start:gateway": "cd Workload && npm run start:gateway",
+    "start:gateway:dev": "cd Workload && npm run start:gateway:dev",
+    "build:manifest:local": "cd Workload && npm run build:manifest:local",
+    "build:manifest:dev": "cd Workload && npm run build:manifest:dev",
+    "build:manifest:prod": "cd Workload && npm run build:manifest:prod",
+    "install:workload": "cd Workload && npm install"
+  },
+  "keywords": [
+    "microsoft-fabric",
+    "workload",
+    "template"
+  ],
+  "author": "PBI.tips",
+  "license": "MIT"
+}

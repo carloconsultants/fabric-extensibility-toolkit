@@ -17,6 +17,15 @@ elif ! command -v dotnet &> /dev/null || ! dotnet --version &> /dev/null; then
     echo "✅ .NET 8 SDK installed and added to PATH"
 fi
 
+# Install mono-complete for NuGet.exe support (required by nuget-bin package)
+if ! command -v mono &> /dev/null; then
+    echo "📦 Installing mono-complete for NuGet packaging support..."
+    sudo apt-get update && sudo apt-get install -y mono-complete
+    echo "✅ Mono installed successfully"
+else
+    echo "✅ Mono already installed"
+fi
+
 # Create local.settings.json for .NET Functions if we have GitHub secrets
 WORKLOAD_DIR="/workspaces/fabric-extensibility-toolkit/Workload"
 API_DIR="$WORKLOAD_DIR/api"
@@ -53,7 +62,7 @@ EOF
     echo "✅ local.settings.json created for .NET Functions!"
     
     # Create .env files for Vite frontend
-    ENV_DEV_FILE="$WORKLOAD_DIR/app/.env.dev"
+    ENV_DEV_FILE="$WORKLOAD_DIR/.env.dev"
     cat > "$ENV_DEV_FILE" << EOF
 # Vite Frontend Environment Variables
 VITE_AZURE_CLIENT_ID=$AZURE_CLIENT_ID
@@ -65,7 +74,7 @@ VITE_API_BASE_URL=http://localhost:7071/api
 VITE_FABRIC_GATEWAY_URL=http://127.0.0.1:60006
 EOF
     
-    ENV_TEST_FILE="$WORKLOAD_DIR/app/.env.test"
+    ENV_TEST_FILE="$WORKLOAD_DIR/.env.test"
     cat > "$ENV_TEST_FILE" << EOF
 # Vite Frontend Environment Variables - Test
 VITE_AZURE_CLIENT_ID=$AZURE_CLIENT_ID
@@ -76,7 +85,7 @@ VITE_ENVIRONMENT=test
 VITE_API_BASE_URL=https://your-test-swa.azurestaticapps.net/api
 EOF
 
-    ENV_PROD_FILE="$WORKLOAD_DIR/app/.env.prod"
+    ENV_PROD_FILE="$WORKLOAD_DIR/.env.prod"
     cat > "$ENV_PROD_FILE" << EOF
 # Vite Frontend Environment Variables - Production
 VITE_AZURE_CLIENT_ID=$AZURE_CLIENT_ID
@@ -119,8 +128,8 @@ EOF
     fi
     
     # Create template .env.dev if it doesn't exist
-    if [ ! -f "$WORKLOAD_DIR/app/.env.dev" ]; then
-        cat > "$WORKLOAD_DIR/app/.env.dev" << EOF
+    if [ ! -f "$WORKLOAD_DIR/.env.dev" ]; then
+        cat > "$WORKLOAD_DIR/.env.dev" << EOF
 # Vite Frontend Environment Variables
 VITE_AZURE_CLIENT_ID=your-aad-app-id-here
 VITE_AZURE_TENANT_ID=your-tenant-id-here
@@ -136,8 +145,14 @@ fi
 
 # Install npm dependencies
 echo "📦 Installing npm dependencies..."
-cd "$WORKLOAD_DIR/app"
+cd "$WORKLOAD_DIR"
 npm install
+
+# Install TanStack Router if not already in package.json dependencies
+if ! grep -q "@tanstack/react-router" package.json; then
+    echo "📦 Installing TanStack Router..."
+    npm install @tanstack/react-router @tanstack/router-devtools @tanstack/router-vite-plugin
+fi
 
 # Install Azure Functions Core Tools if not already installed
 if ! command -v func &> /dev/null; then
@@ -149,6 +164,13 @@ fi
 if ! command -v swa &> /dev/null; then
     echo "📦 Installing Azure Static Web Apps CLI..."
     npm install -g @azure/static-web-apps-cli
+fi
+
+# Download DevGateway if not already present
+DEVGATEWAY_DIR="/workspaces/fabric-extensibility-toolkit/tools/DevGateway"
+if [ ! -d "$DEVGATEWAY_DIR" ] || [ ! -f "$DEVGATEWAY_DIR/Microsoft.Fabric.Workload.DevGateway.dll" ]; then
+    echo "📥 Downloading DevGateway..."
+    pwsh -Command "& /workspaces/fabric-extensibility-toolkit/scripts/Setup/DownloadDevGateway.ps1 -Force \$true"
 fi
 
 # Create swa-cli.config.json for Azure Static Web Apps development
